@@ -73,7 +73,6 @@ fn compute<T: Read, Digest: provider::ByteProvider>(mut from: T, salt: salt::Sal
 {
     let (read, hash) = provider::compute::<_, Digest>(&mut from, salt)?;
 
-    println!("hash ({}): {}", read, hash);
     let mut output = String::with_capacity(128);
     for element in hash.bytes().iter()
 	.into_16()
