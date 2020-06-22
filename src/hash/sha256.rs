@@ -34,13 +34,14 @@ fn compute_stream<T: Read +?Sized, D: Digest>(input: &mut T, output: &mut D) -> 
 impl Sha256Hash
 {
     /// Compute a hash from a stream.
-    pub fn compute<T: Read + ?Sized>(input: &mut T) -> io::Result<(usize, Self)>
+    pub fn compute<T: Read + ?Sized>(input: &mut T, salt: &salt::Salt) -> io::Result<(usize, Self)>
     {
 	let mut hash = [0u8; SHA256_SIZE];
 
 	let mut hasher = Sha256::new();
 
 	let ok = compute_stream(input, &mut hasher)?;
+	hasher.update(salt.bytes());
 
 	assert_eq!(array::copy_slice(&mut hash, hasher.finalize()), SHA256_SIZE);
 	Ok((ok, Self{hash}))
@@ -74,9 +75,9 @@ impl provider::ByteProvider for hash::Sha256Hash
 	&self.bytes()[..]
     }
     
-    fn compute<T: Read + ?Sized>(input: &mut T, done: &mut usize) -> Result<Self, error::Error>
+    fn compute<T: Read + ?Sized>(input: &mut T, salt: &salt::Salt, done: &mut usize) -> Result<Self, error::Error>
     {
-	let (ok, this) = Self::compute(input)?;
+	let (ok, this) = Self::compute(input, salt)?;
 	*done = ok;
 	Ok(this)
     }

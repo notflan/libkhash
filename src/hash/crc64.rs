@@ -13,7 +13,7 @@ impl provider::ByteProvider for Crc64Checksum
 	unsafe{reinterpret::bytes(&self.hash)}
     }
     
-    fn compute<T: Read + ?Sized>(input: &mut T, done: &mut usize) -> Result<Self, error::Error>
+    fn compute<T: Read + ?Sized>(input: &mut T, salt: &salt::Salt, done: &mut usize) -> Result<Self, error::Error>
     {
 	let mut buffer = [0u8; BUFFER_SIZE];
 	let mut hasher = crc64::Digest::new(crc64::ECMA);
@@ -23,6 +23,7 @@ impl provider::ByteProvider for Crc64Checksum
 	    hasher.write(&buffer[..read]);
 	    *done += read;
 	}
+	hasher.write(salt.bytes());
 	Ok(Self{hash: hasher.sum64()})
     }
 }

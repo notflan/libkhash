@@ -21,12 +21,13 @@ impl Digest {
 	d.0 = Some(map::KANA[master]);
 	if from[1] > 0 {
 	    if let Some(slaves) = map::sub(master) {
-		if slaves.len() > 0 {
+		let one = (usize::from(from[1]) / map::KANA.len()) % 2;
+		if slaves.len() > 0 && one > 0{
 		    d.1 = Some(slaves[usize::from(from[1]) % slaves.len()]);
 		    return d;
 		}
 	    }
-	    let from = [from[1]];
+	    let from = [from[1], 0];
 	    d.1 = Self::new(&from[..]).0;
 	}
 	d

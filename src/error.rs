@@ -10,6 +10,7 @@ pub enum Error
     IO(io::Error),
     Format(fmt::Error),
     Length{expected: usize, got:usize,},
+    RNG(getrandom::Error),
     Unknown,
 }
 
@@ -20,6 +21,7 @@ impl error::Error for Error
 	match &self {
 	    Error::IO(e_io) => Some(e_io),
 	    Error::Format(e_fmt) => Some(e_fmt),
+	    Error::RNG(e_rng) => Some(e_rng),
 	    _ => None,
 	}
     }
@@ -34,6 +36,7 @@ impl fmt::Display for Error
 	    Error::IO(io) => write!(f, "io: {}", io),
 	    Error::Format(fmt) => write!(f, "fmt: {}", fmt),
 	    Error::Length{expected, got} => write!(f, "invalid length: expected {}, got {}", expected, got),
+	    Error::RNG(rng) => write!(f, "rng error: {}", rng),
 	    _ => write!(f, "unknown failure"),
 	}
     }
@@ -47,6 +50,7 @@ impl From<Error> for i32
 	    Error::IO(_) => 1,
 	    Error::Format(_) => 2,
 	    Error::Length{..} => 3,
+	    Error::RNG(_) => 4,
 	    _ => -1,
 	}
     }
@@ -64,5 +68,13 @@ impl From<fmt::Error> for Error
     fn from(i: fmt::Error) -> Self
     {
 	Self::Format(i)
+    }
+}
+
+impl From<getrandom::Error> for Error
+{
+    fn from(rng: getrandom::Error) -> Self
+    {
+	Self::RNG(rng)
     }
 }
