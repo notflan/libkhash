@@ -1,7 +1,7 @@
 INSTALL:= /usr/local/lib
 
 khash:
-	cargo build --release
+	RUSTFLAGS="-C target-cpu=native" cargo build --release
 	strip ./target/release/libkhash.so
 
 test:
