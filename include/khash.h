@@ -7,6 +7,11 @@ extern "C" {
 
 #include <stdint.h>
 
+#define KHASH_ALGO_DEFAULT ((uint8_t)0)
+#define KHASH_ALGO_CRC32 ((uint8_t)1)
+#define KHASH_ALGO_CRC64 ((uint8_t)2)
+#define KHASH_ALGO_SHA256 ((uint8_t)3)
+  
   /// No salt
 #define KHASH_SALT_TYPE_NONE ((uint8_t)0)
   /// The default static salt
@@ -16,12 +21,18 @@ extern "C" {
   /// A randomly generated salt.
 #define KHASH_SALT_TYPE_RANDOM ((uint8_t)3)
 
-  /// A valid salt for khash functions. Initialised with `khash_new_salt`.
+  /// A valid salt for khash functions. Instantiated with `khash_new_salt`.
   typedef struct {
     uint8_t salt_type;
     uint32_t size;
     uint8_t* body;
   } khash_salt;
+
+  /// A valid context for khash functinos. Instantiated with `khash_new_context`.
+  typedef struct {
+    uint8_t algo;
+    khash_salt salt;
+  } khash_ctx;
 
   /// Returned by all functions that succeed.
 #define KHASH_SUCCESS ((int32_t)0)
@@ -44,10 +55,15 @@ extern "C" {
   extern int32_t khash_free_salt(khash_salt* salt);
   /// Clone a salt allocated with `khash_new_salt`.
   extern int32_t khash_clone_salt(const khash_salt* src, khash_salt* dst);
+
+  extern int32_t khash_new_context(uint8_t algo, uint8_t salt_type, const void* data, size_t size, khash_ctx* output);
+  extern int32_t khash_free_context(khash_ctx* ctx);
+  extern int32_t khash_clone_context(const khash_ctx* src, khash_ctx* dst);
+  
   /// Compute the length of hash required for the specified input.
-  extern int32_t khash_length(const void* data, size_t size, const khash_salt* salt, size_t* length);
+  extern int32_t khash_length(const khash_ctx* context, const void* data, size_t size, size_t* length);
   /// Compute the hash and store it in `string`. Will write no more than `strlen` bytes into `string`.
-  extern int32_t khash_do(const void* data, size_t size, khash_salt* salt, char* string, size_t strlen);
+  extern int32_t khash_do(khash_ctx* context, const void* data, size_t size, char* string, size_t strlen);
 
 #ifdef __cplusplus
 }
