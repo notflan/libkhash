@@ -1,0 +1,15 @@
+* libkhash - kana-hash
+  Kana mnemonic hashes
+
+** TODO Rust interface
+
+** C header
+   Documented in =./include/khash.h=
+
+** Node FFI bindings
+   NPM package in =./node=
+
+** TODO Documentation
+
+** License
+   GPL'd with <3
