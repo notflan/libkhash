@@ -7,5 +7,5 @@ const Salt = require('./salt');
 
 //console.log(new Kana(Kana.CRC64, new Salt("hello lolis")).once("hello worldノチそぬとね"));
 
-module.exports.Kana = Kana;
-module.exports.Salt = Salt;
+exports.Kana = Kana;
+exports.Salt = Salt;
