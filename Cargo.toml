@@ -1,6 +1,7 @@
 [package]
-name = "kana-hash"
-version = "0.1.0"
+name = "khash"
+description = "Kana hashes"
+version = "1.0.0"
 authors = ["Avril <flanchan@cumallover.me>"]
 edition = "2018"
 
@@ -10,7 +11,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 sha2 = "0.9"
-malloc-array = "1.3.3"
+malloc-array = "1.4"
 libc = "0.2"
 crc = "1.8"
 hex-literal = "0.2"

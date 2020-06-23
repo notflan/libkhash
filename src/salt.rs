@@ -11,6 +11,7 @@ use std::{
 	self,
 	Write,
     },
+    convert::{TryInto,TryFrom},
 };
 
 pub const SIZE: usize = 32;
@@ -81,70 +82,84 @@ impl Salt
 
 #[derive(Copy,Clone,Debug)]
 #[repr(C)]
-#[repr(packed)]
 pub struct FFI
 {
-    size: usize,
+    salt_type: u8,
+    size: u32,
     body: *mut u8,
 }
+
+pub const SALT_TYPE_NONE: u8 = 0;
+pub const SALT_TYPE_DEFAULT: u8 = 1;
+pub const SALT_TYPE_SPECIFIC: u8 = 2;
+pub const SALT_TYPE_RANDOM: u8 = 3;
 
 /// We won't try to copy more than this much data.
 const MAX_FFI_SALT_SIZE: usize = 1024;
 /// Clone a new `Salt` from an `FFI` salt.
 pub unsafe fn clone_from_raw(ptr: *const FFI) -> Salt
 {
-    if ptr.is_null() {
-	Salt::default()
-    } else {
-	let ptr = &*ptr;
-	if ptr.size == 0 || ptr.body.is_null() {
-	    return Salt::None;
-	}
-	let size = std::cmp::min(ptr.size, MAX_FFI_SALT_SIZE);
-	Salt::Dynamic(HeapArray::from_raw_copied(ptr.body, size).into_unsafe().into_boxed_slice())
+    let ffi = &*ptr;
+    match ffi.salt_type {
+	SALT_TYPE_SPECIFIC => {
+	    Salt::Dynamic(HeapArray::from_raw_copied(ffi.body as *const u8, usize::try_from(ffi.size).unwrap()).into_boxed_slice())
+	},
+	SALT_TYPE_DEFAULT => {
+	    Salt::default()
+	},
+	_ => Salt::None,
     }
 }
 /// Consume an `FFI` salt and return a `Salt`.
 pub unsafe fn from_raw(ptr: *mut FFI) -> Salt
 {
-    if ptr.is_null() {
-	Salt::default()
-    } else {
-	let ptr = {
-	    let mut ptr = HeapArray::from_raw_parts(ptr, 1);
-	    let rval = ptr[0].clone();
-	    ptr.set_memory(0);
-	    rval
-	};
-	if ptr.size == 0 || ptr.body.is_null() {
-	    return Salt::None;
+    let ffi = &mut *ptr;
+    let out = match ffi.salt_type {
+	SALT_TYPE_SPECIFIC => {
+	    Salt::Dynamic(HeapArray::from_raw_parts(ffi.body as *mut u8, usize::try_from(ffi.size).unwrap()).into_boxed_slice())
+	},
+	SALT_TYPE_DEFAULT => {
+	    Salt::default()
+	},
+	_ => Salt::None,
+    };
+    ffi.salt_type = SALT_TYPE_NONE;
+    ffi.size = 0;
+    ffi.body = 0 as *mut u8;
+    out
+}
+
+/// Consume a `Salt` and output a new `FFI` salt.
+pub unsafe fn into_raw(salt: Salt) -> FFI
+{
+    unsafe fn allocate(slice: impl AsRef<[u8]>) -> FFI
+    {
+	let (body, size) = box_with_malloc(slice);
+	FFI {
+	    salt_type: SALT_TYPE_SPECIFIC,
+	    size: size.try_into().unwrap(),
+	    body
 	}
-	let body = HeapArray::from_raw_parts(ptr.body, ptr.size);
-	Salt::Dynamic(body.into_boxed_slice())
+    }
+    
+    match &salt {
+	Salt::None => FFI {
+	    salt_type: SALT_TYPE_NONE,
+	    size: 0,
+	    body: 0 as *mut u8,
+	},
+	Salt::Static(STATIC_SALT) => FFI {
+	    salt_type: SALT_TYPE_DEFAULT,
+	    size: 0,
+	    body: 0 as *mut u8,
+	},
+	Salt::Dynamic(bytes) => allocate(&bytes),
+	Salt::Fixed(bytes) | &Salt::Static(bytes) => allocate(&bytes),
     }
 }
 
-/// Consume a `Salt` and output a newly allocated `FFI` salt.
-pub unsafe fn into_raw(salt: Salt) -> *mut FFI
+fn box_with_malloc(slice: impl AsRef<[u8]>) -> (*mut u8, usize)
 {
-    unsafe fn genffi(bytes: &[u8]) -> *mut FFI
-    {
-	if bytes.len() == 0 {
-	    let (ffi, _) = heap![FFI{size:0,body:0 as *mut u8}].into_raw_parts();
-	    ffi
-	} else {
-	    let mut array = heap![unsafe u8; bytes.len()];
-	    array.memory_from_raw(&bytes[0] as *const u8, bytes.len());
-	    let (body, size) = array.into_raw_parts();
-	    let (ffi, _) = heap![FFI{size,body}].into_raw_parts();
-	    ffi
-	}
-    }
-    match salt {
-	Salt::Static(STATIC_SALT) => 0 as *mut FFI,
-	Salt::Static(&other) | Salt::Fixed(other) => genffi(&other[..]),
-	Salt::Dynamic(other) => genffi(&other[..]),
-	_ => genffi(salt.bytes()),
-    }
+    unsafe { HeapArray::from_slice_copied(slice) }.into_raw_parts()
 }
 
