@@ -42,6 +42,8 @@ extern "C" {
   extern int32_t khash_new_salt(uint8_t salt_type, const void* data, size_t size, khash_salt* output);
   /// Free a salt allocated with `khash_new_salt`. It is okay to call this multiple times.
   extern int32_t khash_free_salt(khash_salt* salt);
+  /// Clone a salt allocated with `khash_new_salt`.
+  extern int32_t khash_clone_salt(const khash_salt* src, khash_salt* dst);
   /// Compute the length of hash required for the specified input.
   extern int32_t khash_length(const void* data, size_t size, const khash_salt* salt, size_t* length);
   /// Compute the hash and store it in `string`. Will write no more than `strlen` bytes into `string`.

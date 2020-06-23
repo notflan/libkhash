@@ -161,3 +161,24 @@ pub unsafe extern "C" fn khash_new_salt(salt_type: u8, bin: *const c_void, sz: s
 	GENERIC_SUCCESS
     }
 }
+
+#[no_mangle]
+pub unsafe extern "C" fn khash_clone_salt(salt: *const salt::FFI, out: *mut salt::FFI) -> i32
+{
+    no_unwind!{
+	*out = salt::into_raw(salt::clone_from_raw(salt));
+	GENERIC_SUCCESS
+    }   
+}
+
+
+//TODO:
+/*
+mod ctx;
+
+#[no_mangle]
+pub unsafe extern "C" fn khash_new_context(salt: *mut salt::FFI, ctx: *mut ctx::CContext) -> i32
+{
+
+}
+*/
