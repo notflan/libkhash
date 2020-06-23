@@ -2,9 +2,14 @@ INSTALL:= /usr/local/lib
 INSTALL-BIN:= /usr/local/bin
 CLI:= cli
 
+
 khash:
 	RUSTFLAGS="-C target-cpu=native" cargo build --release
 	strip ./target/release/libkhash.so
+	cd $(CLI) && $(MAKE) kana-hash
+
+khash-nonative:
+	cargo build --release
 	cd $(CLI) && $(MAKE) kana-hash
 
 test:

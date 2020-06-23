@@ -17,13 +17,13 @@ impl Digest {
     {
 	let mut d = Self::default();
 
-	let master = usize::from(from[0]) % map::KANA.len();
-	d.0 = Some(map::KANA[master]);
+	let oneesan = usize::from(from[0]) % map::KANA.len();
+	d.0 = Some(map::KANA[oneesan]);
 	if from[1] > 0 {
-	    if let Some(slaves) = map::sub(master) {
+	    if let Some(imoutos) = map::sub(oneesan) {
 		let one = (usize::from(from[1]) / map::KANA.len()) % 2;
-		if slaves.len() > 0 && one > 0{
-		    d.1 = Some(slaves[usize::from(from[1]) % slaves.len()]);
+		if imoutos.len() > 0 && one > 0{
+		    d.1 = Some(imoutos[usize::from(from[1]) % imoutos.len()]);
 		    return d;
 		}
 	    }
@@ -31,10 +31,10 @@ impl Digest {
 	    d.1 = Self::new(&from[..]).0;
 	}
 	d
-	/*let master = usize::from(from) % map::KANA.len();
-	d.0 = Some(map::KANA[master]);
-	if let Some(slaves) = map::sub(master) {
-	    if slaves.len() > 0 {
+	/*let oneesan = usize::from(from) % map::KANA.len();
+	d.0 = Some(map::KANA[oneesan]);
+	if let Some(imoutos) = map::sub(oneesan) {
+	    if imoutos.len() > 0 {
 	    }
 	} else {
 	    
@@ -49,11 +49,11 @@ impl fmt::Display for Digest
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result
     {
-	if let Some(master) = self.0 {
-	    write!(f, "{}", master)?;
+	if let Some(oneesan) = self.0 {
+	    write!(f, "{}", oneesan)?;
 	}
-	if let Some(slave) = self.1 {
-	    write!(f, "{}", slave)?;
+	if let Some(imouto) = self.1 {
+	    write!(f, "{}", imouto)?;
 	}
 	Ok(())
     }
