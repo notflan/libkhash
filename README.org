@@ -2,7 +2,7 @@
   Kana mnemonic hashes
 
 ** Example output
-   Input is "uguu~" using the default salt.
+   Input is =uguu~= using the default salt.
    | Algorithm          | Output                                                           |
    |--------------------+------------------------------------------------------------------|
    | SHA256             | おシソまツアでぅせツモァだゅノびヲろぢォセつマぶけぁユねハァがゅ |
