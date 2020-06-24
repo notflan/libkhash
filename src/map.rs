@@ -75,7 +75,23 @@ pub fn find_sub(kana: char) -> Option<Vec<char>>
 }
 
 /// Find subs by index.
-pub fn sub(i: usize) -> Option<Vec<char>>
+pub fn sub(i: usize) -> Option<[Option<char>; KANA_SUB.len()]>
+{
+    if i < KANA.len() {
+	let mut output = [None; KANA_SUB.len()];
+	for (j, (def,sub)) in (0..).zip(KANA_SUB_VALID_FOR.iter().zip(KANA_SUB.iter()))
+	{
+	    if def.contains(i) {
+		output[j] = Some(sub.clone());
+	    }
+	}
+	Some(output)
+    } else {
+	None
+    }
+}
+
+pub fn sub_old(i: usize) -> Option<Vec<char>>
 {
     if i < KANA.len() {
 	let mut output = Vec::with_capacity(KANA_SUB.len());

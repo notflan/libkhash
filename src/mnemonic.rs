@@ -21,9 +21,9 @@ impl Digest {
 	d.0 = Some(map::KANA[oneesan]);
 	if from[1] > 0 {
 	    if let Some(imoutos) = map::sub(oneesan) {
-		let one = (usize::from(from[1]) / map::KANA.len()) % 2;
-		if imoutos.len() > 0 && one > 0{
-		    d.1 = Some(imoutos[usize::from(from[1]) % imoutos.len()]);
+		if let Some(imouto) = imoutos[usize::from(from[1]) % map::KANA_SUB.len()]
+		{
+		    d.1 = Some(imouto);
 		    return d;
 		}
 	    }
@@ -31,16 +31,33 @@ impl Digest {
 	    d.1 = Self::new(&from[..]).0;
 	}
 	d
-	/*let oneesan = usize::from(from) % map::KANA.len();
-	d.0 = Some(map::KANA[oneesan]);
-	if let Some(imoutos) = map::sub(oneesan) {
-	    if imoutos.len() > 0 {
-	    }
-	} else {
-	    
-	}
+	// Old
+	/*let mut d = Self::default();
 
-	return d;*/
+	    let oneesan = usize::from(from[0]) % map::KANA.len();
+	    d.0 = Some(map::KANA[oneesan]);
+	    if from[1] > 0 {
+	    if let Some(imoutos) = map::sub(oneesan) {
+	    let one = (usize::from(from[1]) / map::KANA.len()) % 2;
+	    if imoutos.len() > 0 && one > 0{
+	    d.1 = Some(imoutos[usize::from(from[1]) % imoutos.len()]);
+	    return d;
+    }
+    }
+	    let from = [from[1], 0];
+	    d.1 = Self::new(&from[..]).0;
+    }
+	    d*/
+	/*let oneesan = usize::from(from) % map::KANA.len();
+	    d.0 = Some(map::KANA[oneesan]);
+	    if let Some(imoutos) = map::sub(oneesan) {
+	    if imoutos.len() > 0 {
+    }
+    } else {
+	    
+    }
+
+	    return d;*/
     }
 }
 

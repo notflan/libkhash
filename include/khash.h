@@ -32,7 +32,7 @@ extern "C" {
     uint8_t salt_type;
     uint32_t size;
     uint8_t* body;
-  } khash_salt _deprecated("Use `khash_ctx` instead.");
+  } khash_salt;
 
   /// A valid context for khash functinos. Instantiated with `khash_new_context`.
   typedef struct {

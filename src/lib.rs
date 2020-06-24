@@ -19,7 +19,8 @@ mod tests {
 	let context = ctx::Context::default();
 	let kana = generate(&context, input)?;
 	println!("kana: {}", kana);
-	assert_eq!(kana, "ワイトひはっトと");
+	
+	assert_eq!(kana, "ワイトひはぇトョ");
 	Ok(())
     }
     #[test]
