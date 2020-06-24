@@ -1,6 +1,15 @@
 * libkhash - kana-hash
   Kana mnemonic hashes
 
+** Example output
+   Input is "uguu~" using the default salt.
+   | Algorithm          | Output                                                           |
+   |--------------------+------------------------------------------------------------------|
+   | SHA256             | おシソまツアでぅせツモァだゅノびヲろぢォセつマぶけぁユねハァがゅ |
+   | CRC32              | わぼぢァ                                                         |
+   | CRC64              | づやワえぼちレこ                                                 |
+   | SHA256 (truncated) | おシソまツアで                                                   |
+
 ** Installation
    The dynamic library is built with ~Cargo~ and ~Rust~, and the cli example program is built with ~gcc~.
 
@@ -56,78 +65,78 @@
 
 *** Example
     To create a context
-#+BEGIN_SRC c
+    #+BEGIN_SRC c
   #include <khash.h>
 
   const char* input_salt = "salt!";
   const char* input_data = "some data to hash".
   khash_context ctx;
   assert(khash_new_context(KHASH_ALGO_SHA256, KHASH_SALT_TYPE_SPECIFIC, input_salt, strlen(input_salt), &ctx) == KHASH_SUCCESS, "khash_new_context() failed.");
-#+END_SRC
+    #+END_SRC
     Find the buffer length we need.
 
-#+BEGIN_SRC c
+    #+BEGIN_SRC c
   size_t length;
   assert(khash_length(&ctx, input_data, strlen(input_data), &length) == KHASH_SUCCESS, "khash_length() failed.");
-#+END_SRC
+    #+END_SRC
     Create the buffer and hash, then print the result to ~stdout~.
-#+BEGIN_SRC c
+    #+BEGIN_SRC c
   char* buffer = alloca(length+1);
   assert(khash_do(&ctx, input_data, strlen(input_data), buffer, length) == KHASH_SUCCESS, "khash_do() failed.");
   buffer[length] = 0; // Ensure we have a NUL terminator.
 
   setlocale(LC_ALL, ""); //Ensure we can print UTF-8.
   printf("Kana hash: %s\n", buffer);
-#+END_SRC
+    #+END_SRC
 
 *** Definitions
 
 **** Macros
-    All macros defined are for options.
-    They cannot be combied as flags.
-    The =KHASH_ALGO_= prefixed ones are for use as the /algo/ parameter in the ~khash_new_context()~ function.
-    The =KHASH_SALT_TYPE_= prefixed ones are for use as the /salt_type/ parameter.
-    The =KHASH_ERROR_= prefixed ones each indicate an error code returned by all of the functions.
-    | Name                          | Description                                                                                |
-    |-------------------------------+--------------------------------------------------------------------------------------------|
-    | ~KHASH_ALGO_DEFAULT~          | The default algorithm used by the library (truncated SHA256)                               |
-    | ~KHASH_ALGO_CRC32~            | CRC32 checksum algorithm                                                                   |
-    | ~KHASH_ALGO_CRC64~            | CRC64 checksum algorithm                                                                   |
-    | ~KHASH_ALGO_SHA256~           | SHA256 hash algorithm                                                                      |
-    | ~KHSAH_ALGO_SHA256_TRUNCATED~ | SHA256 truncated to 64-bits                                                                |
-    | ~KHASH_SALT_TYPE_NONE~        | No salt                                                                                    |
-    | ~KHASH_SALT_TYPE_DEFAULT~     | The default static salt used by the library                                                |
-    | ~KHASH_SALT_TYPE_SPECIFIC~    | A provided salt, as the /data/ and of the /size/ parameter passed to ~khash_new_context()~ |
-    | ~KHASH_SALT_TYPE_RANDOM~      | A randomly generated salt                                                                  |
-    | ~KHASH_SUCCESS~               | The code returned by all of the functions when the operation was successful                |
-    | ~KHASH_ERROR_IO~              | There was an IO error                                                                      |
-    | ~KHASH_ERROR_FORMAT~          | The was a text formatting related error                                                    |
-    | ~KHASH_ERROR_LENGTH~          | There was a hash length mismatch                                                           |
-    | ~KHASH_ERROR_RNG~             | The random number generator failed                                                         |
-    | ~KHASH_ERROR_UNKNOWN~         | There was an unknown error or the stack attempted to unwind past the FFI boundary.         |
+     All macros defined are for options.
+     They cannot be combied as flags.
+     The =KHASH_ALGO_= prefixed ones are for use as the /algo/ parameter in the ~khash_new_context()~ function.
+     The =KHASH_SALT_TYPE_= prefixed ones are for use as the /salt_type/ parameter.
+     The =KHASH_ERROR_= prefixed ones each indicate an error code returned by all of the functions.
+     | Name                          | Description                                                                                |
+     |-------------------------------+--------------------------------------------------------------------------------------------|
+     | ~KHASH_ALGO_DEFAULT~          | The default algorithm used by the library (truncated SHA256)                               |
+     | ~KHASH_ALGO_CRC32~            | CRC32 checksum algorithm                                                                   |
+     | ~KHASH_ALGO_CRC64~            | CRC64 checksum algorithm                                                                   |
+     | ~KHASH_ALGO_SHA256~           | SHA256 hash algorithm                                                                      |
+     | ~KHSAH_ALGO_SHA256_TRUNCATED~ | SHA256 truncated to 64-bits                                                                |
+     | ~KHASH_SALT_TYPE_NONE~        | No salt                                                                                    |
+     | ~KHASH_SALT_TYPE_DEFAULT~     | The default static salt used by the library                                                |
+     | ~KHASH_SALT_TYPE_SPECIFIC~    | A provided salt, as the /data/ and of the /size/ parameter passed to ~khash_new_context()~ |
+     | ~KHASH_SALT_TYPE_RANDOM~      | A randomly generated salt                                                                  |
+     | ~KHASH_SUCCESS~               | The code returned by all of the functions when the operation was successful                |
+     | ~KHASH_ERROR_IO~              | There was an IO error                                                                      |
+     | ~KHASH_ERROR_FORMAT~          | The was a text formatting related error                                                    |
+     | ~KHASH_ERROR_LENGTH~          | There was a hash length mismatch                                                           |
+     | ~KHASH_ERROR_RNG~             | The random number generator failed                                                         |
+     | ~KHASH_ERROR_UNKNOWN~         | There was an unknown error or the stack attempted to unwind past the FFI boundary.         |
 
 **** Types
-    There are 2 exported structs, although you will rarely need to access their members directly.
-    | Name            | Field       | Description                                                                                                                                  |
-    |-----------------+-------------+----------------------------------------------------------------------------------------------------------------------------------------------|
-    | ~khash_salt~    |             | A salt allocated into a context by ~khash_new_context()~ and released by ~khash_free_context()~. You shouldn't mess with its field directly. |
-    |                 | /salt_type/ | The type of the salt.                                                                                                                        |
-    |                 | /size/      | The size of the salt.                                                                                                                        |
-    |                 | /body/      | A pointer to the body of the salt. (The memory allocated here is not guaranteed to be of the provided /size/.)                               |
-    |-----------------+-------------+----------------------------------------------------------------------------------------------------------------------------------------------|
-    | ~khash_context~ |             | A context for the =khash_= functions. Allocated by ~khash_new_context()~. You can modify its fields if you want.                             |
-    |                 | /algo/      | The algorithm for this context.                                                                                                              |
-    |                 | /flags/     | Placeholder for potential flags added in the future. Currently unused.                                                                       |
-    |                 | /salt/      | The allocated salt. You shouldn't directly mess with this field.                                                                                     |
+     There are 2 exported structs, although you will rarely need to access their members directly.
+     | Name            | Field       | Description                                                                                                                                  |
+     |-----------------+-------------+----------------------------------------------------------------------------------------------------------------------------------------------|
+     | ~khash_salt~    |             | A salt allocated into a context by ~khash_new_context()~ and released by ~khash_free_context()~. You shouldn't mess with its field directly. |
+     |                 | /salt_type/ | The type of the salt.                                                                                                                        |
+     |                 | /size/      | The size of the salt.                                                                                                                        |
+     |                 | /body/      | A pointer to the body of the salt. (The memory allocated here is not guaranteed to be of the provided /size/.)                               |
+     |-----------------+-------------+----------------------------------------------------------------------------------------------------------------------------------------------|
+     | ~khash_context~ |             | A context for the =khash_= functions. Allocated by ~khash_new_context()~. You can modify its fields if you want.                             |
+     |                 | /algo/      | The algorithm for this context.                                                                                                              |
+     |                 | /flags/     | Placeholder for potential flags added in the future. Currently unused.                                                                       |
+     |                 | /salt/      | The allocated salt. You shouldn't directly mess with this field.                                                                                     |
 **** Functions
-    All defined functions return either ~KHASH_SUCCESS~ or one of the =KHASH_ERROR_= values [[Macros][above]].
-    | Name                  | Parameters                                     | Description                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-    |-----------------------+------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-    | ~khash_new_context~   | /algo/, /salt_type/, /data/, /size/, /output/  | Creates a new context for use with other =libkhash= functions. /algo/ is expected to be one of the =KHASH_ALGO_= macros listed [[Macros][above.]] Likewise /salt_type/ is expected to be one of the =KHASH_SALT_TYPE_= macros. /data/ can be ~NULL~ unless /salt_type/ is set to ~KHASH_SALT_TYPE_SPECIFIC~, in which exactly /size/ bytes are read from /data/. /output/ is expected to be a valid pointer to a currently unused `khash_context` structure. |
-    | ~khash_free_context~  | /ctx/                                          | Free a context allocated with ~khash_new_context()~.  /ctx/ is expected to be a valid pointer to a currently allocated context.                                                                                                                                                                                                                                                                                                                  |
-    | ~khash_clone_context~ | /src/, /dst/                                   | Clone a context allocated with ~khash_new_context()~ into another. The newly allocated /dst/ must be properly released (with ~khash_free_context()~ or ~khash_do()~) as well as the source. /src/ is expected to be a valid pointer to an allocated context, and /dst/ is expected to be a valid pointer to an unallocated context.                                                                                                              |
-    | ~khash_length~        | /ctx/, /data/, /size/, /length/                | Compute the length required to hold the output string for ~khash_do()~ for a given input. Will read exactly /size/ bytes from /data/ and compute the value into what is pointed to by /length/ (which is expected to be a valid pointer to a type of ~size_t~.) The resulting length does not include a =NUL= terminator for the string.                                                                                                         |
-    | ~khash_do~            | /ctx/, /data/, /size/, /output/, /output_size/ | Compute the kana-hash of /size/ bytes from /data/ and store no more than /output_size/ of the the result into the string pointed to by /output/. Each pointer is expected to be valid. This function frees the supplied /ctx/ after the hash has been computed, and thus /ctx/ is no longer valid afterwards.                                                                                                                                    |
+     All defined functions return either ~KHASH_SUCCESS~ or one of the =KHASH_ERROR_= values [[Macros][above]].
+     | Name                  | Parameters                                     | Description                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+     |-----------------------+------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+     | ~khash_new_context~   | /algo/, /salt_type/, /data/, /size/, /output/  | Creates a new context for use with other =libkhash= functions. /algo/ is expected to be one of the =KHASH_ALGO_= macros listed [[Macros][above.]] Likewise /salt_type/ is expected to be one of the =KHASH_SALT_TYPE_= macros. /data/ can be ~NULL~ unless /salt_type/ is set to ~KHASH_SALT_TYPE_SPECIFIC~, in which exactly /size/ bytes are read from /data/. /output/ is expected to be a valid pointer to a currently unused `khash_context` structure. |
+     | ~khash_free_context~  | /ctx/                                          | Free a context allocated with ~khash_new_context()~.  /ctx/ is expected to be a valid pointer to a currently allocated context.                                                                                                                                                                                                                                                                                                                  |
+     | ~khash_clone_context~ | /src/, /dst/                                   | Clone a context allocated with ~khash_new_context()~ into another. The newly allocated /dst/ must be properly released (with ~khash_free_context()~ or ~khash_do()~) as well as the source. /src/ is expected to be a valid pointer to an allocated context, and /dst/ is expected to be a valid pointer to an unallocated context.                                                                                                              |
+     | ~khash_length~        | /ctx/, /data/, /size/, /length/                | Compute the length required to hold the output string for ~khash_do()~ for a given input. Will read exactly /size/ bytes from /data/ and compute the value into what is pointed to by /length/ (which is expected to be a valid pointer to a type of ~size_t~.) The resulting length does not include a =NUL= terminator for the string.                                                                                                         |
+     | ~khash_do~            | /ctx/, /data/, /size/, /output/, /output_size/ | Compute the kana-hash of /size/ bytes from /data/ and store no more than /output_size/ of the the result into the string pointed to by /output/. Each pointer is expected to be valid. This function frees the supplied /ctx/ after the hash has been computed, and thus /ctx/ is no longer valid afterwards.                                                                                                                                    |
 
 ** Node FFI bindings
    NPM package in [[file:./node/index.js][./node]]
