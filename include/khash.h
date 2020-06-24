@@ -84,4 +84,6 @@ extern "C" {
 }
 #endif
 
+#undef _deprecated
+
 #endif /* _KHASH_H */

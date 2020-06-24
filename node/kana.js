@@ -69,44 +69,63 @@ const get_salt_type = (salt) => {
     else return Kana.SALT_DEFAULT;
 };
 
+/// Create a new kana-hash context.
+/// This context must be disposed of correctly either by calling `finish()` or `once()`.
+/// `algo` is expected to be one of the `Kana.ALGO_*` constants, or `undefined`.
+/// `salt` is expected to be either an object of `Salt` or `undefined`.
 function Kana(algo, salt)
 {
-    const stype = get_salt_type(salt);
-    const fbuffer = salt ? salt.buffer || null : null;
-    this.ctx = ctx_create(algo || 0, stype, fbuffer, fbuffer ? fbuffer.length : 0);
+    if(algo && algo.ctx) {
+	this.ctx = algo.ctx;
+    } else {
+	const stype = get_salt_type(salt);
+	const fbuffer = salt ? salt.buffer || null : null;
+	this.ctx = ctx_create(algo || 0, stype, fbuffer, fbuffer ? fbuffer.length : 0);
+    }
 }
 const K = Kana.prototype;
 
+/// Free the associated context.
+/// The object is no longer valid after this call.
 K.finish = function() {
     ctx_free(this.ctx);
+    this.ctx = null;
 };
 
+/// Compute the kana-hash for `string` and then free the associated context.
 K.once = function(string) {
     let len = khash_length(this.ctx, string);
     return khash_do(this.ctx, string, len);
 };
 
+/// Compute the kana-hash for `string`.
+K.hash = function(string) {
+    const ctx = ctx_clone(this.ctx);
+    let len = khash_length(ctx, string);
+    return khash_do(ctx, string, len);
+};
+
+/// Clone this kana-hash context.
+K.clone = function() {
+    const ctx = ctx_clone(this.ctx);
+    return new Kana({ctx: ctx});
+};
+
+/// The default algorithm used. (sha256 truncated.)
 Kana.ALGO_DEFAULT = 0;
+/// CRC32 algorithm.
 Kana.ALGO_CRC32 = 1;
+/// CRC64 algorithm.
 Kana.ALGO_CRC64 = 2;
+/// SHA256 algorithm.
 Kana.ALGO_SHA256 = 3;
+/// SHA256 truncated to 64-bits.
 Kana.ALGO_SHA256_TRUNCATED = 4;
 
+// You don't need to reference these directly, use the `Salt` module instead.
 Kana.SALT_NONE = 0;
 Kana.SALT_DEFAULT = 1;
 Kana.SALT_SPECIFIC = 2;
 Kana.SALT_RANDOM = 3;
 
-
 module.exports = Kana;
-/*
-  const Kana = require('./kana');
-
-  let buffer= ref.alloc('long');
-  let sz = ref.alloc('long');
-  console.log(libhkana._kana_length(buffer, 2, null, sz));
-  console.log(sz.deref());
-
-  let output = new Buffer(sz);
-  console.log(libhkana._kana_do(buffer, 2, null, output, sz));
-  console.log(ref.readCString(output, 0));*/
