@@ -47,8 +47,7 @@
   $ cd cli && make
      #+END_SRC
 
-** TODO Rust interface
-
+** TODO Rust crate
 
 ** C header
    A header file is provided for C programs wanting to use the khash interface.
@@ -204,4 +203,4 @@
 *** TODO Digest algorithm
 
 ** License
-   GPL'd with <3
+   GPL'd with love <3
