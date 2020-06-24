@@ -1,3 +1,5 @@
+use std::ops::RangeInclusive;
+
 pub const KANA: &[char; 92] = &[
     'あ', 'い', 'う', 'え', 'お',
     'か', 'き', 'く', 'け', 'こ',
@@ -20,6 +22,12 @@ pub const KANA: &[char; 92] = &[
     'ヤ', 'ユ', 'ヨ', 
     'ワ', 'ン', 'ヲ', 
 ];
+
+pub const KANA_SIGN: &[RangeInclusive<usize>; 2] = &[
+    0..=45,
+    46..=91,
+];
+
 pub const KANA_SUB: &[char; 18] = &[
     'ゃ',
     'ゅ',

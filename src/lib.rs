@@ -15,18 +15,12 @@ mod tests {
     #[test]
     fn it_works() -> Result<(), error::Error>
     {
-	let input = b"lolis are super ultra mega cute";
+	let input = b"lolis are super ultra mega cute!";
 	let context = ctx::Context::default();
 	let kana = generate(&context, input)?;
 	println!("kana: {}", kana);
 	
-	assert_eq!(kana, "ワイトひはぇトョ");
-	Ok(())
-    }
-    #[test]
-    fn ffi() -> Result<(), Box<dyn std::error::Error>>
-    {
-	
+	assert_eq!(kana, "もッちゅゆをヌョ");
 	Ok(())
     }
 }
@@ -36,7 +30,7 @@ pub const BUFFER_SIZE: usize = 4096;
 mod array;
 mod reinterpret;
 mod ext;
-use ext::*;
+//use ext::*;
 mod group; //unused
 mod sixteen;
 use sixteen::Bit16IterExt;

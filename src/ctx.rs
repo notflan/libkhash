@@ -11,13 +11,14 @@ pub enum Algorithm
     Crc32,
     Crc64,
     Sha256,
+    Sha256Truncated,
 }
 
 impl Default for Algorithm
 {
     fn default() -> Self
     {
-	Self::Crc64
+	Self::Sha256Truncated
     }
 }
 
@@ -62,6 +63,7 @@ impl Context
 	    Algorithm::Crc32 => provide::<hash::Crc32Checksum, _>(&mut from, &self.salt, &mut output)?,
 	    Algorithm::Crc64 => provide::<hash::Crc64Checksum, _>(&mut from, &self.salt, &mut output)?,
 	    Algorithm::Sha256 => provide::<hash::Sha256Hash, _>(&mut from, &self.salt, &mut output)?,
+	    Algorithm::Sha256Truncated => provide::<hash::Sha256Truncated, _>(&mut from, &self.salt, &mut output)?,
 	}.into_boxed_slice();
 
 	Ok((output, bytes))
@@ -111,6 +113,7 @@ pub const ALGO_DEFAULT: u8 = 0;
 pub const ALGO_CRC32: u8 = 1;
 pub const ALGO_CRC64: u8 = 2;
 pub const ALGO_SHA256: u8 = 3;
+pub const ALGO_SHA256_TRUNCATED: u8 = 4;
 
 /// FFI context
 #[derive(Debug)]
@@ -130,6 +133,7 @@ impl From<Algorithm> for u8
 	    Algorithm::Crc32 => ALGO_CRC32,
 	    Algorithm::Crc64 => ALGO_CRC64,
 	    Algorithm::Sha256 => ALGO_SHA256,
+	    Algorithm::Sha256Truncated => ALGO_SHA256_TRUNCATED,
 	}
     }
 }
@@ -141,6 +145,7 @@ impl From<u8> for Algorithm
 	    ALGO_CRC32 => Algorithm::Crc32,
 	    ALGO_CRC64 => Algorithm::Crc64,
 	    ALGO_SHA256 => Algorithm::Sha256,
+	    ALGO_SHA256_TRUNCATED => Algorithm::Sha256Truncated,
 	    _ => Self::default(),
 	}
     }

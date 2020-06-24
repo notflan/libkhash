@@ -66,10 +66,11 @@ static int _main(int argc, char** argv, khash_ctx ctx)
 	{
 	  printf("kana-hash cli\n");
 	  printf("Usage: khash [--algo ALGO] [--salt SALT-TYPE [<salt>]] [--] <input strings...>\n");
-	  printf("  --algo: Specify the algorithm. (default crc64)\n");
+	  printf("  --algo: Specify the algorithm. (default sha256 truncated)\n");
 	  printf("    ALGO: 3: crc32.\n");
 	  printf("    ALGO: 6: crc64.\n");
 	  printf("    ALGO: s: sha256.\n");
+	  printf("    ALGO: t: truncated (64bit) sha256.\n");
 	  printf("  --salt: Specify the salt.\n");
 	  printf("    SALT_TYPE: D: default embedded.\n");
 	  printf("             : N: no salt.\n");
@@ -93,7 +94,12 @@ static int _main(int argc, char** argv, khash_ctx ctx)
 		  ctx.algo = KHASH_ALGO_CRC64;
 		  break;
 		case 's':
+		case 'S':
 		  ctx.algo = KHASH_ALGO_SHA256;
+		  break;
+		case 'T':
+		case 't':
+		  ctx.algo = KHASH_ALGO_SHA256_TRUNCATED;
 		  break;
 		default:
 		  fprintf(stderr, "ALGO: unknow algorithm key `%c'\n", *argv[1]);

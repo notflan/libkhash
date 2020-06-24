@@ -16,18 +16,24 @@ impl Digest {
     pub fn new(from: &[u8]) -> Self
     {
 	let mut d = Self::default();
+	if from.len() == 0 {
+	    return d;
+	}
 
-	let oneesan = usize::from(from[0]) % map::KANA.len();
-	d.0 = Some(map::KANA[oneesan]);
-	if from[1] > 0 {
-	    if let Some(imoutos) = map::sub(oneesan) {
+	let sign0 = unsafe { *reinterpret::value::<i8>(from) < 0 };
+	let range = &map::KANA_SIGN[sign0 as usize];
+	let kana = &map::KANA[range.clone()];
+	let oneesan = usize::from(from[0]) % kana.len();
+	d.0 = Some(kana[oneesan]);
+	if from.len() > 1 {
+	    if let Some(imoutos) = map::sub(range.start()+oneesan) {
 		if let Some(imouto) = imoutos[usize::from(from[1]) % map::KANA_SUB.len()]
 		{
 		    d.1 = Some(imouto);
 		    return d;
 		}
 	    }
-	    let from = [from[1], 0];
+	    let from = [from[1]];
 	    d.1 = Self::new(&from[..]).0;
 	}
 	d

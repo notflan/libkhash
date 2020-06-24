@@ -17,6 +17,7 @@ extern "C" {
 #define KHASH_ALGO_CRC32 ((uint8_t)1)
 #define KHASH_ALGO_CRC64 ((uint8_t)2)
 #define KHASH_ALGO_SHA256 ((uint8_t)3)
+#define KHASH_ALGO_SHA256_TRUNCATED ((uint8_t)4) /* SHA256 truncated to 64 bits */
   
   /// No salt
 #define KHASH_SALT_TYPE_NONE ((uint8_t)0)

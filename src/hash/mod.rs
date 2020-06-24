@@ -8,3 +8,6 @@ pub use crc64::*;
 
 mod crc32;
 pub use crc32::*;
+
+mod sha256t;
+pub use sha256t::*;
