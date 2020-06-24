@@ -74,6 +74,7 @@ impl Context
 	CContext{ 
 	    algo: u8::from(self.algo),
 	    salt: salt::into_raw(self.salt),
+	    flags: Default::default(),
 	}
     }
     
@@ -121,6 +122,7 @@ pub const ALGO_SHA256_TRUNCATED: u8 = 4;
 pub struct CContext
 {
     algo: u8,
+    flags: u64, //nothing yet, might be flags later idk
     salt: salt::FFI,
     
 }

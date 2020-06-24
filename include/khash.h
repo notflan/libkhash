@@ -1,3 +1,4 @@
+
 #ifndef _KHASH_H
 #define _KHASH_H
 
@@ -38,6 +39,7 @@ extern "C" {
   /// A valid context for khash functinos. Instantiated with `khash_new_context`.
   typedef struct {
     uint8_t algo;
+    uint64_t flags;
     khash_salt salt;
   } khash_ctx;
 
