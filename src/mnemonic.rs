@@ -24,7 +24,12 @@ impl Digest {
 	let range = &map::KANA_SIGN[sign0 as usize];
 	let kana = &map::KANA[range.clone()];
 	let oneesan = usize::from(from[0]) % kana.len();
-	d.0 = Some(kana[oneesan]);
+	
+	d.0 = Some(match map::KANA_SWAP[oneesan] {
+	    Some(swap) if (from[0] & 0x2) == 0x2 => swap,
+	    Some(_) if (from[0] & 0x8) == 0x8 && map::KANA_SWAP2[oneesan].is_some() => map::KANA_SWAP2[oneesan].unwrap(),
+	    _ => kana[oneesan],
+	});
 	if from.len() > 1 {
 	    if let Some(imoutos) = map::sub(range.start()+oneesan) {
 		if let Some(imouto) = imoutos[usize::from(from[1]) % map::KANA_SUB.len()]
@@ -37,33 +42,6 @@ impl Digest {
 	    d.1 = Self::new(&from[..]).0;
 	}
 	d
-	// Old
-	/*let mut d = Self::default();
-
-	    let oneesan = usize::from(from[0]) % map::KANA.len();
-	    d.0 = Some(map::KANA[oneesan]);
-	    if from[1] > 0 {
-	    if let Some(imoutos) = map::sub(oneesan) {
-	    let one = (usize::from(from[1]) / map::KANA.len()) % 2;
-	    if imoutos.len() > 0 && one > 0{
-	    d.1 = Some(imoutos[usize::from(from[1]) % imoutos.len()]);
-	    return d;
-    }
-    }
-	    let from = [from[1], 0];
-	    d.1 = Self::new(&from[..]).0;
-    }
-	    d*/
-	/*let oneesan = usize::from(from) % map::KANA.len();
-	    d.0 = Some(map::KANA[oneesan]);
-	    if let Some(imoutos) = map::sub(oneesan) {
-	    if imoutos.len() > 0 {
-    }
-    } else {
-	    
-    }
-
-	    return d;*/
     }
 }
 

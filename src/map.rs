@@ -1,5 +1,6 @@
 use std::ops::RangeInclusive;
 
+/// All valid kana for the digest
 pub const KANA: &[char; 92] = &[
     'あ', 'い', 'う', 'え', 'お',
     'か', 'き', 'く', 'け', 'こ',
@@ -19,10 +20,56 @@ pub const KANA: &[char; 92] = &[
     'ハ', 'ヒ', 'フ', 'ヘ', 'ホ', 
     'マ', 'ミ', 'ム', 'メ', 'モ', 
     'ラ', 'リ', 'ル', 'レ', 'ロ', 
-    'ヤ', 'ユ', 'ヨ', 
-    'ワ', 'ン', 'ヲ', 
+    'ヤ', 'ユ', 'ヨ', 'ワ', 'ン',
+    'ヲ', //91 
 ];
 
+/// Valid kana for the 
+pub const KANA_SWAP: &[Option<char>; 92] = &[
+    None, None, None, None, None, //a
+    Some('が'), Some('ぎ'), Some('ぐ'), Some('げ'), Some('ご'), //ka
+    None, None, None, None, None, //sa
+    Some('だ'), Some('ぢ'), Some('づ'), Some('で'), Some('ど'), //ta
+    None, None, None, None, None, //na
+    Some('ば'), Some('び'), Some('ぶ'), Some('べ'), Some('ぼ'), // ha
+    None, None, None, None, None, //ma
+    None, None, None, None, None, //ra
+    None, None, None, None, None, //ya
+    None, //wo (45)
+    None, None, None, None, None, //a
+    Some('ガ'), Some('ギ'), Some('グ'), Some('ゲ'), Some('ゴ'), //ka
+    None, None, None, None, None, //sa
+    Some('ダ'), Some('ヂ'), Some('ヅ'), Some('デ'), Some('ド'), //ta
+    None, None, None, None, None, //na
+    Some('バ'), Some('ビ'), Some('ブ'), Some('ベ'), Some('ボ'), // ha
+    None, None, None, None, None, //ma
+    None, None, None, None, None, //ra
+    None, None, None, None, None, //ya    
+    None, //wo (91)
+];
+
+pub const KANA_SWAP2: &[Option<char>; 92] = &[
+    None, None, None, None, None, //a
+    None, None, None, None, None, //ka
+    None, None, None, None, None, //sa
+    None, None, None, None, None, //ta
+    None, None, None, None, None, //na
+    Some('ぱ'), Some('ぴ'), Some('ぽ'), Some('ぺ'), Some('ぽ'), //ha
+    None, None, None, None, None, //ma
+    None, None, None, None, None, //ra
+    None, None, None, None, None, //ya
+    None, //wo (45)
+    None, None, None, None, None, //a
+    None, None, None, None, None, //ka
+    None, None, None, None, None, //sa
+    None, None, None, None, None, //ta
+    None, None, None, None, None, //na
+    Some('パ'), Some('ピ'), Some('プ'), Some('ペ'), Some('ポ'), //ha
+    None, None, None, None, None, //ma
+    None, None, None, None, None, //ra
+    None, None, None, None, None, //ya
+    None, //wo (91)
+];
 pub const KANA_SIGN: &[RangeInclusive<usize>; 2] = &[
     0..=45,
     46..=91,

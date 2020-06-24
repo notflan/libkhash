@@ -23,6 +23,17 @@ mod tests {
 	assert_eq!(kana, "もッちゅゆをヌョ");
 	Ok(())
     }
+    #[test]
+    fn rng()
+    {
+	let input = b"loli";
+	for _ in 0..100
+	{
+	    let context = ctx::Context::new(ctx::Algorithm::Sha256, salt::Salt::random().unwrap());
+	    let kana = generate(&context, input).unwrap();
+	    println!("kana: {}", kana);
+	}
+    }
 }
 
 pub const BUFFER_SIZE: usize = 4096;
