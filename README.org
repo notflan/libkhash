@@ -234,7 +234,7 @@
     The kana algorithm is a 16-bit block digest that works as follows:
     - The most and least significant 8 bits are each seperated into /Stage 0/ and /Stage 1/ each operating on the first and second byte respectively.
     - Stage 0:
-      1. The byte is sign tested (bitwise ~AND~ =0x80=), store this as a boolean in /sign0/.
+      1. The byte is sign tested (bitwise ~AND~ =0x80=), store this as a boolean in /sign0/ (Negative becomes =1=, positive becomes =0=.)
       2. The valid first character range is looked up using the result of the sign test (either 0 or 1), store the range in /range/, and the slice ~KANA~ taken from the range in /kana/.
       3. The first index is calculated as the unsigned first byte modulo the size (exclusive) of /range/. Store this as /index/.
       4. Compute the value of the first byte bitwise ~XOR~ the second byte, store this as /index1/.

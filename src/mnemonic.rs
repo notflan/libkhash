@@ -20,7 +20,7 @@ impl Digest {
 	    return d;
 	}
 
-	let sign0 = unsafe { *reinterpret::value::<i8>(from) < 0 };
+	let sign0 = from[0] & 0x80 != 0;//unsafe { *reinterpret::value::<i8>(from) < 0 };
 	let range = &map::KANA_SIGN[sign0 as usize];
 	let kana = &map::KANA[range.clone()];
 	let oneesan = usize::from(from[0]) % kana.len();
