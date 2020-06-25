@@ -1,0 +1,11 @@
+#!/bin/bash
+
+make khash-nonative || exit 1
+mkdir kana-hash
+cp target/release/libkhash.a kana-hash/
+cp target/release/libkhash.so kana-hash/
+cp cli/build/kana-hash kana-hash/
+
+tar -cvjSf libkhash-bin.tar.bz2 kana-hash
+
+mv kana-hash /tmp/$(uuidgen)
