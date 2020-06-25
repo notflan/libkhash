@@ -19,10 +19,12 @@ test:
 
 install:
 	cp -f ./target/release/libkhash.so $(INSTALL)/libkhash.so
+	cp -f ./target/release/libkhash.a $(INSTALL)/libkhash.a
 	cp -f $(CLI)/build/kana-hash $(INSTALL-BIN)/kana-hash
 	cp -f include/khash.h $(INSTALL-INCLUDE)/khash.h
 
 uninstall:
-	rm -f $(INSTALL)/libkana_hash.so
+	rm -f $(INSTALL)/libkhash.so
+	rm -f $(INSTALL)/libkhash.a
 	rm -f $(INSTALL-BIN)/kana-hash
 	rm -f $(INSTALL-INCLUDE)/khash.h

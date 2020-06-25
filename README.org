@@ -11,10 +11,10 @@
    | SHA256 (truncated) | おシソまツアで                                                   |
 
 ** Installation
-   The dynamic library is built with ~Cargo~ and ~Rust~, and the cli example program is built with ~gcc~.
+   The dynamic library is built with ~Cargo~ and ~Rust~, and the CLI example program is built with ~gcc~.
 
 *** Build and install
-    The default build configuration builds both the dynamic library and the cli example program, and copies them to =/usr/lib/libkhash.so= and =/usr/bin/kana-hash= respectively.
+    The default build configuration builds both the dynamic library, static library, and the CLI example program and copies them to =/usr/local/lib/libkhash.so=, =/usr/local/lib/libkhash.a= and =/usr/local/bin/kana-hash= respectively. Also installed is the C header to =/usr/local/include/khash.h=.
 
     #+BEGIN_SRC shell
   $ make && sudo make install
@@ -33,8 +33,8 @@
     The Makefile contains some other build directives.
 
 **** Native code optimisations
-     By default =libkhash= builds the shared library with native architecture optimisations enabled.
-     If you are intending to move the binary to another architecture, this might not be desireable.
+     By default =libkhash= builds the shared and static library with native architecture optimisations enabled.
+     If you are intending to move the libraries to another architecture, this might not be desireable.
      To build without such optimisations, run:
 
      #+BEGIN_SRC shell
