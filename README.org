@@ -21,7 +21,7 @@
   $ make && sudo make install
     #+END_SRC
 
-    The install path can be changed by editing the ~INSTALL~ and ~INSTALL-BIN~ paths in the [[file:./Makefile][Makefile]].
+    The install path can be changed by editing the ~INSTALL~, ~INSTALL-BIN~ and ~INSTALL-INCLUDE~ paths in the [[file:./Makefile][Makefile]].
 
 *** Uninstall
     To remove installed binaries, run:
@@ -203,7 +203,7 @@
 
      #+BEGIN_SRC javascript
        const hash1 = new Kana(Kana.ALGO_DEFAULT, new Salt("salt~")).once("input string~"); //Allocates the exact space required for the output string.
-       const hash2 = Kana.single(Kana.ALGO_DEFAULT, new Salt("salt~")).once("input string~"); //Allocates the max space required for the output string, instead of the exact. Might be faster.
+       const hash2 = Kana.single(Kana.ALGO_DEFAULT, new Salt("salt~"), "input string~"); //Allocates the max space required for the output string, instead of the exact. Might be faster.
      #+END_SRC
 
 *** Interface documentation
