@@ -5,6 +5,7 @@ use std::{
     },
 };
 
+/// An algorithm to use for the context.
 #[derive(Clone,Debug,PartialEq,Eq,Hash)]
 pub enum Algorithm
 {
@@ -22,6 +23,7 @@ impl Default for Algorithm
     }
 }
 
+/// A kana-hash context containing it's salt and algorithm.
 #[derive(Clone,Debug,PartialEq,Eq,Hash)]
 pub struct Context
 {
@@ -31,6 +33,7 @@ pub struct Context
 
 impl Context
 {
+    /// Create a new kana-hash context with an algorithm and a salt
     pub fn new(algo: Algorithm, salt: impl Into<salt::Salt>) -> Self
     {
 	Self {
@@ -38,16 +41,20 @@ impl Context
 	    salt: salt.into(),
 	}
     }
+
+    /// The algorithm used
     pub fn get_algorithm(&self) -> &Algorithm
     {
 	&self.algo
     }
+    /// The salt used
     pub fn get_salt(&self) -> &salt::Salt
     {
 	&self.salt
     }
 
-    pub fn compute<R: Read>(&self, mut from: R) -> Result<(usize, Box<[u8]>), error::Error>
+    
+    pub(crate) fn compute<R: Read>(&self, mut from: R) -> Result<(usize, Box<[u8]>), error::Error>
     {
 	fn provide<P,R>(input: &mut R, salt: &salt::Salt, output: &mut usize) -> Result<Vec<u8>, error::Error>
 	where P: provider::ByteProvider,
@@ -69,7 +76,7 @@ impl Context
 	Ok((output, bytes))
     }
 
-    pub unsafe fn into_raw(self) -> CContext
+    pub(crate) unsafe fn into_raw(self) -> CContext
     {
 	CContext{ 
 	    algo: u8::from(self.algo),
@@ -78,7 +85,7 @@ impl Context
 	}
     }
     
-    pub unsafe fn clone_from_raw(from: *const CContext) -> Self
+    pub(crate) unsafe fn clone_from_raw(from: *const CContext) -> Self
     {
 	let from = &*from;
 	Self {
@@ -87,7 +94,7 @@ impl Context
 	}
     }
 
-    pub unsafe fn from_raw(from: *mut CContext) -> Self
+    pub(crate) unsafe fn from_raw(from: *mut CContext) -> Self
     {
 	let from = &mut *from;
 	let output = Self{
@@ -110,16 +117,16 @@ impl Default for Context
     }
 }
 
-pub const ALGO_DEFAULT: u8 = 0;
-pub const ALGO_CRC32: u8 = 1;
-pub const ALGO_CRC64: u8 = 2;
-pub const ALGO_SHA256: u8 = 3;
-pub const ALGO_SHA256_TRUNCATED: u8 = 4;
+pub(crate) const ALGO_DEFAULT: u8 = 0;
+pub(crate) const ALGO_CRC32: u8 = 1;
+pub(crate) const ALGO_CRC64: u8 = 2;
+pub(crate) const ALGO_SHA256: u8 = 3;
+pub(crate) const ALGO_SHA256_TRUNCATED: u8 = 4;
 
 /// FFI context
 #[derive(Debug)]
 #[repr(C)]
-pub struct CContext
+pub(crate) struct CContext
 {
     algo: u8,
     flags: u64, //nothing yet, might be flags later idk

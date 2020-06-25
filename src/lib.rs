@@ -242,12 +242,14 @@ mod sixteen;
 use sixteen::Bit16IterExt;
 mod def;
 mod map;
-mod salt;
+pub mod salt;
 mod hash;
 mod provider;
 mod mnemonic;
-mod error;
-mod ctx;
+pub mod error;
+pub mod ctx;
+mod stream;
+pub use stream::Digest;
 
 #[macro_use]
 mod ffi;
@@ -269,6 +271,7 @@ fn compute<T: Read>(context: &ctx::Context, mut from: T) -> Result<(usize, Strin
     Ok((read,output))
 }
 
+/// Generate kana hash from a slice.
 pub fn generate<T: AsRef<[u8]>>(context: &ctx::Context, bytes: T) -> Result<String, error::Error>
 {
     let bytes = bytes.as_ref();
@@ -291,6 +294,8 @@ use malloc_array::{
     HeapArray,
 };
 
+
+
 // FFI section
 
 /// Calculate the length in bytes of a kana hash output.
@@ -298,8 +303,9 @@ use malloc_array::{
 /// # Note
 /// Does not consume `salt`
 #[no_mangle]
-pub unsafe extern "C" fn khash_length(context: *const ctx::CContext, bin: *const c_void, sz: size_t, out_len: *mut size_t) -> i32
+pub unsafe extern "C" fn khash_length(context: *const c_void, bin: *const c_void, sz: size_t, out_len: *mut size_t) -> i32
 {
+    let context = context as *const ctx::CContext;
     no_unwind!{
 	try error::Error::Unknown;
 	let context = ctx::Context::clone_from_raw(context);
@@ -316,8 +322,9 @@ pub unsafe extern "C" fn khash_length(context: *const ctx::CContext, bin: *const
 /// # Note
 /// Consumes `salt`
 #[no_mangle]
-pub unsafe extern "C" fn khash_do(context: *mut ctx::CContext, bin: *const c_void, sz: size_t, out_str: *mut c_char, str_len: size_t) -> i32
+pub unsafe extern "C" fn khash_do(context: *mut c_void, bin: *const c_void, sz: size_t, out_str: *mut c_char, str_len: size_t) -> i32
 {
+    let context = context as *mut ctx::CContext;
     no_unwind!{
 	try error::Error::Unknown;
 	
@@ -333,8 +340,9 @@ pub unsafe extern "C" fn khash_do(context: *mut ctx::CContext, bin: *const c_voi
 
 /// Free a context
 #[no_mangle]
-pub unsafe extern "C" fn khash_free_context(context: *mut ctx::CContext) -> i32
+pub unsafe extern "C" fn khash_free_context(context: *mut c_void) -> i32
 {
+    let context = context as *mut ctx::CContext;
     no_unwind!{
 	drop(ctx::Context::from_raw(context));
 	GENERIC_SUCCESS
@@ -343,8 +351,9 @@ pub unsafe extern "C" fn khash_free_context(context: *mut ctx::CContext) -> i32
 
 /// Create a new context
 #[no_mangle]
-pub unsafe extern "C" fn khash_new_context(algo: u8, salt_type: u8, bin: *const c_void, sz: size_t, nptr: *mut ctx::CContext) -> i32
+pub unsafe extern "C" fn khash_new_context(algo: u8, salt_type: u8, bin: *const c_void, sz: size_t, nptr: *mut c_void) -> i32
 {
+    let nptr = nptr as *mut ctx::CContext;
     no_unwind!{
 	try error::Error::Unknown;
 	let salt = match salt_type {
@@ -374,8 +383,10 @@ pub unsafe extern "C" fn khash_new_context(algo: u8, salt_type: u8, bin: *const 
 
 /// Clone a context
 #[no_mangle]
-pub unsafe extern "C" fn khash_clone_context(raw: *const ctx::CContext, out: *mut ctx::CContext) -> i32
+pub unsafe extern "C" fn khash_clone_context(raw: *const c_void, out: *mut c_void) -> i32
 {
+    let raw = raw as *const ctx::CContext;
+    let out = out as *mut ctx::CContext;
     no_unwind!{
 	*out = ctx::Context::clone_from_raw(raw).into_raw();
 	GENERIC_SUCCESS
@@ -384,8 +395,9 @@ pub unsafe extern "C" fn khash_clone_context(raw: *const ctx::CContext, out: *mu
 
 /// Free a salt allocated with `khash_new_salt`
 #[no_mangle]
-pub unsafe extern "C" fn khash_free_salt(salt: *mut salt::FFI) -> i32
+pub unsafe extern "C" fn khash_free_salt(salt: *mut c_void) -> i32
 {
+    let salt = salt as *mut salt::FFI;
     no_unwind!{
 	drop(salt::from_raw(salt));
 	GENERIC_SUCCESS
@@ -394,8 +406,9 @@ pub unsafe extern "C" fn khash_free_salt(salt: *mut salt::FFI) -> i32
 
 /// Create a new salt
 #[no_mangle]
-pub unsafe extern "C" fn khash_new_salt(salt_type: u8, bin: *const c_void, sz: size_t, nptr: *mut salt::FFI) -> i32
+pub unsafe extern "C" fn khash_new_salt(salt_type: u8, bin: *const c_void, sz: size_t, nptr: *mut c_void) -> i32
 {
+    let nptr = nptr as *mut salt::FFI;
     no_unwind!{
 	try error::Error::Unknown;
 	match salt_type {
@@ -422,8 +435,10 @@ pub unsafe extern "C" fn khash_new_salt(salt_type: u8, bin: *const c_void, sz: s
 
 /// Clone a salt
 #[no_mangle]
-pub unsafe extern "C" fn khash_clone_salt(salt: *const salt::FFI, out: *mut salt::FFI) -> i32
+pub unsafe extern "C" fn khash_clone_salt(salt: *const c_void, out: *mut c_void) -> i32
 {
+    let salt = salt as *const salt::FFI;
+    let out = out as *mut salt::FFI;
     no_unwind!{
 	*out = salt::into_raw(salt::clone_from_raw(salt));
 	GENERIC_SUCCESS

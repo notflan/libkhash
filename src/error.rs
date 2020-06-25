@@ -4,13 +4,19 @@ use std::{
     error,
 };
 
+/// An error value used by all kana-hash functions.
 #[derive(Debug)]
 pub enum Error
 {
+    /// There was an IO error reading or writing a buffer.
     IO(io::Error),
+    /// There was a text formatting error writing the context.
     Format(fmt::Error),
+    /// There was a length mismatch.
     Length{expected: usize, got:usize,},
+    /// The random number generator failed.
     RNG(getrandom::Error),
+    /// There was an unknown error.
     Unknown,
 }
 

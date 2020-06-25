@@ -13,10 +13,13 @@ use std::{
     convert::{TryInto,TryFrom},
 };
 
+/// The static salt size
 pub const SIZE: usize = 32;
 
+/// The default static salt
 const STATIC_SALT: &[u8; SIZE] = &hex!("6787f049791466d5a31a3aa6f7138d8fbb907fd1785758298b5c97b0f3fb31ff");
 
+/// A salt to use for the kana-hash algorithm
 #[derive(Clone,PartialEq,Eq,Hash,Debug)]
 pub enum Salt
 {
@@ -36,10 +39,12 @@ impl Default for Salt
 
 impl Salt
 {
+    /// A fixed size salt of [SIZE]
     pub fn fixed(array: [u8; SIZE]) -> Self
     {
 	Self::Fixed(array)
     }
+    /// A salt from a slice
     pub fn unfixed<T>(slice: &T) -> Self
     where T: AsRef<[u8]> + ?Sized
     {
@@ -47,21 +52,25 @@ impl Salt
 	assert!(slice.len() > 0, "Salt expects at least one byte.");
 	Self::Dynamic(Vec::from(slice).into_boxed_slice())
     }
-    pub fn none() -> Self
+    /// No salt
+    pub const fn none() -> Self
     {
 	Self::None
     }
+    /// Try to create a random salt
     pub fn random() -> Result<Self, Error>
     {
 	let mut buffer = [0u8; SIZE];
 	getrandom(&mut buffer[..])?;
 	Ok(Self::Fixed(buffer))
     }
+    /// The default internal salt
     pub const fn internal() -> Self
     {
 	Self::Static(STATIC_SALT)
     }
 
+    /// Get the raw bytes of this salt
     pub fn bytes(&self) -> &[u8]
     {
 	match &self {
@@ -81,22 +90,22 @@ impl Salt
 
 #[derive(Copy,Clone,Debug)]
 #[repr(C)]
-pub struct FFI
+pub(crate) struct FFI
 {
     salt_type: u8,
     size: u32,
     body: *mut u8,
 }
 
-pub const SALT_TYPE_NONE: u8 = 0;
-pub const SALT_TYPE_DEFAULT: u8 = 1;
-pub const SALT_TYPE_SPECIFIC: u8 = 2;
-pub const SALT_TYPE_RANDOM: u8 = 3;
+pub(crate) const SALT_TYPE_NONE: u8 = 0;
+pub(crate) const SALT_TYPE_DEFAULT: u8 = 1;
+pub(crate) const SALT_TYPE_SPECIFIC: u8 = 2;
+pub(crate) const SALT_TYPE_RANDOM: u8 = 3;
 
 /// We won't try to copy more than this much data.
 const MAX_FFI_SALT_SIZE: usize = 1024;
 /// Clone a new `Salt` from an `FFI` salt.
-pub unsafe fn clone_from_raw(ptr: *const FFI) -> Salt
+pub(crate) unsafe fn clone_from_raw(ptr: *const FFI) -> Salt
 {
     let ffi = &*ptr;
     match ffi.salt_type {
@@ -110,7 +119,7 @@ pub unsafe fn clone_from_raw(ptr: *const FFI) -> Salt
     }
 }
 /// Consume an `FFI` salt and return a `Salt`.
-pub unsafe fn from_raw(ptr: *mut FFI) -> Salt
+pub(crate) unsafe fn from_raw(ptr: *mut FFI) -> Salt
 {
     let ffi = &mut *ptr;
     let out = match ffi.salt_type {
@@ -129,7 +138,7 @@ pub unsafe fn from_raw(ptr: *mut FFI) -> Salt
 }
 
 /// Consume a `Salt` and output a new `FFI` salt.
-pub unsafe fn into_raw(salt: Salt) -> FFI
+pub(crate) unsafe fn into_raw(salt: Salt) -> FFI
 {
     unsafe fn allocate(slice: impl AsRef<[u8]>) -> FFI
     {
