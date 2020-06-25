@@ -18,11 +18,11 @@ int main(void)
   assert(khash_new_context(KHASH_ALGO_SHA256, KHASH_SALT_TYPE_NONE, NULL, 0, &ctx) == KHASH_SUCCESS);
   printf("salt: %d\n", (int)ctx.salt.size);
   size_t length;
-  assert(khash_length(&ctx, string, strlen(string), &length) == KHASH_SUCCESS);
+  assert(khash_max_length(KHASH_ALGO_SHA256, strlen(string), &length) == KHASH_SUCCESS);
   printf("length: %d\n", (int)length);
   char* output = alloca(length+1);
+  memset(output,0,length+1);
   assert(khash_do(&ctx, string, strlen(string), output,length) == KHASH_SUCCESS);
-  output[length] = 0;
   printf("output: %s\n", output);
   return 0;
 }

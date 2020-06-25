@@ -1,5 +1,6 @@
 INSTALL:= /usr/local/lib
 INSTALL-BIN:= /usr/local/bin
+INSTALL-INCLUDE:=/usr/local/include
 CLI:= cli
 
 
@@ -19,7 +20,9 @@ test:
 install:
 	cp -f ./target/release/libkhash.so $(INSTALL)/libkhash.so
 	cp -f $(CLI)/build/kana-hash $(INSTALL-BIN)/kana-hash
+	cp -f include/khash.h $(INSTALL-INCLUDE)/khash.h
 
 uninstall:
 	rm -f $(INSTALL)/libkana_hash.so
 	rm -f $(INSTALL-BIN)/kana-hash
+	rm -f $(INSTALL-INCLUDE)/khash.h

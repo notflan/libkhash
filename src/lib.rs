@@ -34,6 +34,34 @@ mod tests {
 	    println!("kana: {}", kana);
 	}
     }
+
+    #[test]
+    fn max_len()
+    {
+	fn max_length(algo: ctx::Algorithm, data_len: usize) -> usize
+	{
+	    let mut output: libc::size_t = 0;
+	    unsafe {
+		assert_eq!(khash_max_length(algo.into(), data_len.into(), &mut output as *mut libc::size_t), GENERIC_SUCCESS);
+	    }
+	    output
+	}
+
+	let input = "owowowoakpwodkapowkdapowkdpaokwpdoakwd";
+
+	let algos = [ctx::Algorithm::Crc32, ctx::Algorithm::Crc64, ctx::Algorithm::Sha256, ctx::Algorithm::Sha256Truncated];
+	for i in  0..1000
+	{
+	    let max_len = max_length(algos[i%algos.len()].clone(), 0);
+	    print!("{} - len of {:?}: {}... ", i, algos[i%algos.len()], max_len);
+	    let len = {
+		let con = ctx::Context::new(algos[i%algos.len()].clone(), salt::Salt::random().unwrap());
+		generate(&con, input).unwrap().len()
+	    };
+	    assert!(len < max_len);
+	    println!("\t\tOK {}", len);
+	}
+    }
 }
 
 pub const BUFFER_SIZE: usize = 4096;
@@ -235,14 +263,18 @@ pub unsafe extern "C" fn khash_clone_salt(salt: *const salt::FFI, out: *mut salt
     }   
 }
 
-
-//TODO:
-/*
-mod ctx;
-
+/// Find the maximum length possible for a given algorithm's output.
 #[no_mangle]
-pub unsafe extern "C" fn khash_new_context(salt: *mut salt::FFI, ctx: *mut ctx::CContext) -> i32
+pub unsafe extern "C" fn khash_max_length(algo: u8, _input_sz: libc::size_t, max_len: *mut libc::size_t) -> i32
 {
-
+    no_unwind!{
+	let hash_sz = match ctx::Algorithm::from(algo) {
+	    ctx::Algorithm::Crc32 => std::mem::size_of::<hash::Crc32Checksum>(),
+	    ctx::Algorithm::Crc64 => std::mem::size_of::<hash::Crc64Checksum>(),
+	    ctx::Algorithm::Sha256 => std::mem::size_of::<hash::Sha256Hash>(),
+	    ctx::Algorithm::Sha256Truncated => std::mem::size_of::<hash::Sha256Truncated>(),
+	};
+	*max_len =  std::mem::size_of::<char>() * hash_sz;
+	GENERIC_SUCCESS
+    }
 }
-*/

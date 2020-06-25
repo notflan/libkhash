@@ -57,13 +57,8 @@ extern "C" {
   /// Unknown error
 #define KHASH_ERROR_UNKNOWN ((int32_t)-1)
 
-  /// Create a new salt. `salt_type` is expected to be one of the above defined `KHASH_SALT_TYPE_*` macros.
-  /// Depending on the type, `data` may be `NULL`.
-  extern int32_t khash_new_salt(uint8_t salt_type, const void* data, size_t size, khash_salt* output) _deprecated("Use `khash_new_context` instead."); 
-  /// Free a salt allocated with `khash_new_salt`. It is okay to call this multiple times.
-  extern int32_t khash_free_salt(khash_salt* salt) _deprecated("Use `khash_free_context` instead.");
-  /// Clone a salt allocated with `khash_new_salt`.
-  extern int32_t khash_clone_salt(const khash_salt* src, khash_salt* dst) _deprecated("Use `khash_close_context` instead."); 
+  /// Find the maximum possible digest output size for the given algorithm and input length, and set that to `digest_length`. If the algorithm's output is not dynamically sized `input_length` does not need to be provided.
+  extern int32_t khash_max_length(uint8_t algo, size_t input_length, size_t* digest_length);
 
   /// Create a new context with the specified algorithm (one of the `KHASH_ALGO_*` macro constants), salt type (one of the `KHASH_SALT_TYPE_*` constants), optional salt `data` and salt length `size`, and output pointer `output`.
   /// `data` may be `NULL` if the corresponding `salt_type` does not require an input.
@@ -80,6 +75,14 @@ extern "C" {
   /// This function takes ownership of and frees `context` after it has been called.
   extern int32_t khash_do(khash_ctx* context, const void* data, size_t size, char* string, size_t strlen);
 
+  /// Create a new salt. `salt_type` is expected to be one of the above defined `KHASH_SALT_TYPE_*` macros.
+  /// Depending on the type, `data` may be `NULL`.
+  extern int32_t khash_new_salt(uint8_t salt_type, const void* data, size_t size, khash_salt* output) _deprecated("Use `khash_new_context` instead."); 
+  /// Free a salt allocated with `khash_new_salt`. It is okay to call this multiple times.
+  extern int32_t khash_free_salt(khash_salt* salt) _deprecated("Use `khash_free_context` instead.");
+  /// Clone a salt allocated with `khash_new_salt`.
+  extern int32_t khash_clone_salt(const khash_salt* src, khash_salt* dst) _deprecated("Use `khash_close_context` instead.");
+  
 #ifdef __cplusplus
 }
 #endif
