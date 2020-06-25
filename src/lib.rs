@@ -1,4 +1,5 @@
 //#![feature(const_generics)]
+#![feature(test)]
 #![allow(dead_code)]
 use std::{
     io::{
@@ -7,11 +8,177 @@ use std::{
     fmt::Write,
 };
 
+extern crate test;
+
 type HASHER = hash::Crc64Checksum;
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::collections::HashMap;
+    use test::{Bencher, black_box,};
+
+    #[bench]
+    fn speed_sha256t(b: &mut Bencher)
+    {
+	const ITERATIONS: usize = 1;
+
+	let context = ctx::Context::new(ctx::Algorithm::Sha256Truncated, salt::Salt::random().unwrap());
+	const INPUT: &'static [u8] = b"owo uwu owo uwuw owuw ua eaowi oiho aido iahs  doi ajosidj aoi";
+	b.iter(|| {
+	    for _x in 0..ITERATIONS
+	    {
+		black_box(generate(&context, INPUT)).unwrap();
+	    }
+	});
+    }
+    #[bench]
+    fn speed_sha256(b: &mut Bencher)
+    {
+	const ITERATIONS: usize = 1;
+
+	let context = ctx::Context::new(ctx::Algorithm::Sha256, salt::Salt::random().unwrap());
+	const INPUT: &'static [u8] = b"owo uwu owo uwuw owuw ua eaowi oiho aido iahs  doi ajosidj aoi";
+	b.iter(|| {
+	    for _x in 0..ITERATIONS
+	    {
+		black_box(generate(&context, INPUT)).unwrap();
+	    }
+	});
+    }
+    #[bench]
+    fn speed_crc64(b: &mut Bencher)
+    {
+	const ITERATIONS: usize = 1;
+
+	let context = ctx::Context::new(ctx::Algorithm::Crc64, salt::Salt::random().unwrap());
+	const INPUT: &'static [u8] = b"owo uwu owo uwuw owuw ua eaowi oiho aido iahs  doi ajosidj aoi";
+	b.iter(|| {
+	    for _x in 0..ITERATIONS
+	    {
+		black_box(generate(&context, INPUT)).unwrap();
+	    }
+	});
+    }
+    #[bench]
+    fn speed_crc32(b: &mut Bencher)
+    {
+	const ITERATIONS: usize = 1;
+
+	let context = ctx::Context::new(ctx::Algorithm::Crc32, salt::Salt::random().unwrap());
+	const INPUT: &'static [u8] = b"owo uwu owo uwuw owuw ua eaowi oiho aido iahs  doi ajosidj aoi";
+	b.iter(|| {
+	    for _x in 0..ITERATIONS
+	    {
+		black_box(generate(&context, INPUT)).unwrap();
+	    }
+	});
+    }
+
+    #[test]
+    fn distrubution()
+    {
+	const THREADS: usize = 10;
+	const ITERATIONS: usize = 1000;
+	
+	use std::{
+	    sync::{
+		Arc,
+		Mutex,
+	    },
+	    thread,
+	};
+	let global = Arc::new(Mutex::new(HashMap::with_capacity(map::KANA.len()+map::KANA_SUB.len())));
+
+	let _ = {
+	    let mut global = global.lock().unwrap();
+	    for init_c in map::KANA.iter().chain(map::KANA_SUB.iter())
+	    {
+		global.insert(*init_c, 0);
+	    }
+	    for init_c in map::KANA_SWAP.iter().chain(map::KANA_SWAP2.iter())
+	    {
+		if let &Some(init_c) = init_c {
+		    global.insert(init_c, 0);
+		}
+	    }
+	};
+
+	fn do_work(num: usize, global: Arc<Mutex<HashMap<char, usize>>>, mut local: HashMap<char, usize>)
+	{
+	    let mut random_buffer = [0u8; 4096];
+	    let context = ctx::Context::new(ctx::Algorithm::Sha256, salt::Salt::none());
+	    for _ in 0..num
+	    {
+		getrandom::getrandom(&mut random_buffer[..]).unwrap();
+		let kana = generate(&context, &random_buffer[..]).unwrap();
+		for c in kana.chars()
+		{
+		    *local.get_mut(&c).unwrap() += 1;
+		}
+	    }
+
+	    let mut global = global.lock().unwrap();
+	    for (k,v) in local.into_iter()
+	    {
+		*global.get_mut(&k).unwrap() += v;
+	    }
+	}
+
+	let joiners: Vec<thread::JoinHandle<()>> = {
+	    let lock = global.lock().unwrap();
+
+	    (0..THREADS).map(|_| {
+		let global  = Arc::clone(&global);
+		let local = lock.clone();
+		thread::spawn(move || {
+		    do_work(ITERATIONS, global, local);
+		})
+	    }).collect()
+	};
+
+	for x in joiners.into_iter()
+	{
+	    x.join().unwrap();
+	}
+
+	println!("Running {} x {} ({}) hashes (sha256)", ITERATIONS, THREADS, (ITERATIONS*THREADS));
+	let global = global.lock().unwrap();
+	let mut lowest = usize::MAX;
+	let mut highest = 0;
+
+	let mut lowest_char = '.';
+	let mut highest_char = '.';
+	const FMAX: f64 = (ITERATIONS*THREADS) as f64;
+
+	let global = {
+	    let mut out = Vec::with_capacity(global.len());
+	    for (&k, &v) in global.iter()
+	    {
+		out.push((k, v));
+	    }
+	    out.sort_by(|b, a| a.1.partial_cmp(&b.1).unwrap());
+	    out.into_iter()
+	};
+	
+	for (k, v) in global
+	{
+	    println!("{} -> {} ({}%)", k, v, ((v as f64)/FMAX)*100.00);
+	    if v < lowest {
+		lowest = v;
+		lowest_char = k;
+	    }
+	    if v > highest {
+		highest = v;
+		highest_char = k;
+	    }
+	}
+	println!("Lowest was '{}' {} ({}%)", lowest_char, lowest, ((lowest as f64)/FMAX)*100.00);
+	println!("Highest was '{}' {} ({}%)", highest_char, highest, ((highest as f64)/FMAX)*100.00);
+	println!("Range was {}", highest-lowest);
+	assert!(lowest > 0);
+    }
+    
     #[test]
     fn it_works() -> Result<(), error::Error>
     {
@@ -20,7 +187,7 @@ mod tests {
 	let kana = generate(&context, input)?;
 	println!("kana: {}", kana);
 	
-	assert_eq!(kana, "もッちゅゆをヌョ");
+	assert_eq!(kana, "もシちゅゆをヌョ");
 	Ok(())
     }
     #[test]

@@ -235,11 +235,12 @@ The kana algorithm is a 16-bit block digest that works as follows:
  - Stage 0:
    1. The byte is sign tested (bitwise ~AND~ =0x80=), store this as a boolean in /sign0/.
    2. The valid first character range is looked up using the result of the sign test (either 0 or 1), store the range in /range/, and the slice ~KANA~ taken from the range in /kana/.
-   3. The first index is calculated as the unsigned first byte modulo the size (exclusive) of /range/. Store this as /index0/.
-   4. The swap table is checked to see if /index0/ has an entry. Then each following step is checked in order:
-    + If the swap entry exists and the first byte bitwise ~AND~ =0x2= is not 0, set the first character of the output to the value found in the swap table.
-    + If the swap entry exists and the first byte bitwise ~AND~ =0x8= is not 0 and the index has an entry in the 2nd swap table, set the first character of the output to the value found in the 2nd swap table.
-    + In any other case, set the first character of the output to the value found in the /kana/ slice at the /index/.
+   3. The first index is calculated as the unsigned first byte modulo the size (exclusive) of /range/. Store this as /index/.
+   4. Compute the value of the first byte bitwise ~XOR~ the second byte, store this as /index1/.
+   5. The swap table is checked to see if /index/ + start of /range/ has an entry. Then each following step is checked in order:
+      + If the swap entry exists and /index1/ bitwise ~AND~ =0x2= is =0=, set the first character of the output to the value found in the swap table.
+      + If the swap entry exists and /index1/ bitwise ~AND~ =0x8= is =0= and /index/ + start of /range/ has an entry in the 2nd swap table, set the first character of the output to the value found in the 2nd swap table.
+      + In any other case, set the first character of the output to the value found in the /kana/ slice at /index/.
  - Stage 1:
    1. Compute a sub table for /index/ plus the start of /range/ using the ranges defined in ~KANA_SUB_VALID_FOR~ and store it in /sub/. If there is no sub table possible, skip to step 3.
    2. If there is an entry in /sub/ for the index of the 2nd byte modulo the size of ~KANA_SUB~, set the second output character to be that character.

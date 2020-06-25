@@ -97,8 +97,10 @@ pub const KANA_SUB_VALID_FOR: &[Definition; 18] = &[ // Should we properly restr
     Definition::single(51..=85),
     Definition::single(51..=85),
     Definition::single(51..=85),
-    Definition::any(),
-    Definition::any(),
+    
+    Definition::single(0..=45),
+    Definition::single(46..=91),
+    
     Definition::single(5..=39),
     Definition::single(5..=39),
     Definition::single(5..=39),

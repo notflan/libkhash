@@ -24,10 +24,14 @@ impl Digest {
 	let range = &map::KANA_SIGN[sign0 as usize];
 	let kana = &map::KANA[range.clone()];
 	let oneesan = usize::from(from[0]) % kana.len();
-	
-	d.0 = Some(match map::KANA_SWAP[oneesan] {
-	    Some(swap) if (from[0] & 0x2) == 0x2 => swap,
-	    Some(_) if (from[0] & 0x8) == 0x8 && map::KANA_SWAP2[oneesan].is_some() => map::KANA_SWAP2[oneesan].unwrap(),
+	let xor = if from.len() > 1 {
+	    from[0] ^ from[1]
+	} else {
+	    from[0]
+	} as u32;
+	d.0 = Some(match map::KANA_SWAP[range.start()+oneesan] {
+	    Some(swap) if xor & 2 == 0 => swap,
+	    Some(_) if xor & 8 == 0 &&  map::KANA_SWAP2[range.start() + oneesan].is_some() => map::KANA_SWAP2[range.start()+oneesan].unwrap(),
 	    _ => kana[oneesan],
 	});
 	if from.len() > 1 {

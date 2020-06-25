@@ -14,7 +14,8 @@ khash-nonative:
 	cd $(CLI) && $(MAKE) kana-hash
 
 test:
-	cargo test
+	RUSTFLAGS="-C target-cpu=native -C opt-level=3" cargo test
+	RUSTFLAGS="-C target-cpu=native -C opt-level=3" cargo bench
 	cd $(CLI) && $(MAKE)
 
 install:
