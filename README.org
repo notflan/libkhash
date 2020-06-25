@@ -73,20 +73,30 @@
   khash_context ctx;
   assert(khash_new_context(KHASH_ALGO_SHA256, KHASH_SALT_TYPE_SPECIFIC, input_salt, strlen(input_salt), &ctx) == KHASH_SUCCESS, "khash_new_context() failed.");
     #+END_SRC
-    Find the buffer length we need.
+    Find the buffer length we need and allocate a buffer.
 
     #+BEGIN_SRC c
   size_t length;
   assert(khash_length(&ctx, input_data, strlen(input_data), &length) == KHASH_SUCCESS, "khash_length() failed.");
     #+END_SRC
+    
+
     Create the buffer and hash, then print the result to ~stdout~.
     #+BEGIN_SRC c
-  char* buffer = alloca(length+1);
-  assert(khash_do(&ctx, input_data, strlen(input_data), buffer, length) == KHASH_SUCCESS, "khash_do() failed.");
-  buffer[length] = 0; // Ensure we have a NUL terminator.
+      char* buffer = alloca(length+1);
+      assert(khash_do(&ctx, input_data, strlen(input_data), buffer, length) == KHASH_SUCCESS, "khash_do() failed.");
+      buffer[length] = 0; // Ensure we have a NUL terminator.
 
-  setlocale(LC_ALL, ""); //Ensure we can print UTF-8.
-  printf("Kana hash: %s\n", buffer);
+      setlocale(LC_ALL, ""); //Ensure we can print UTF-8.
+      printf("Kana hash: %s\n", buffer);
+    #+END_SRC
+
+    Alternatively, we can allocate the max length needed instead of calculating it.
+    #+BEGIN_SRC c
+  size_t length;
+  assert(khash_max_length(KHASH_ALGO_SHA256, strlen(input_data), &length) == KHASH_SUCCESS, "khash_max_length() failed.");
+  char* buffer = alloca(length+1);
+  memset(buffer, 0, length+1); //Ensure NUL terminators.
     #+END_SRC
 
 *** Definitions
@@ -187,6 +197,14 @@
   const new_ctx = ctx.clone();
       #+END_SRC
 
+**** Alternatively
+     To create a hash in one line you can do one of the following.
+
+     #+BEGIN_SRC javascript
+       const hash1 = new Kana(Kana.ALGO_DEFAULT, new Salt("salt~")).once("input string~"); //Allocates the exact space required for the output string.
+       const hash2 = Kana.single(Kana.ALGO_DEFAULT, new Salt("salt~")).once("input string~"); //Allocates the max space required for the output string, instead of the exact. Might be faster.
+     #+END_SRC
+
 *** Interface documentation
     The 2 exported objects are ~Kana~ and ~Salt~.
     ~Kana~'s constructor expects between 0 and 2 arguments.
@@ -194,6 +212,7 @@
     + The second is either an instance of ~Salt~ or empty, if empty ~Kana~ uses the default library salt.
     ~Salt~'s constructor expects 0 or 1 argument.
     + Either a string to use as the specific salt or empty, if empty there is no salt.
+    ~Kana~ also has a static function ~single(algo, salt, input)~ which automatically creates a context, computes the hash, frees the context, and then returns the computed hash as a JavaScript string.
 
 **** Defined constants
      | Name                         | Type                 | Description                                                              |
@@ -212,24 +231,24 @@
 
 *** Digest algorithm
     The kana algorithm is a 16-bit block digest that works as follows:
-     - The most and least significant 8 bits are each seperated into /Stage 0/ and /Stage 1/ each operating on the first and second byte respectively.
-     - Stage 0:
-       1. The byte is sign tested (bitwise ~AND~ =0x80=), store this as a boolean in /sign0/.
-       2. The valid first character range is looked up using the result of the sign test (either 0 or 1), store the range in /range/, and the slice ~KANA~ taken from the range in /kana/.
-       3. The first index is calculated as the unsigned first byte modulo the size (exclusive) of /range/. Store this as /index0/.
-       4. The swap table is checked to see if /index0/ has an entry. Then each following step is checked in order:
-	  + If the swap entry exists and the first byte bitwise ~AND~ =0x2= is not 0, set the first character of the output to the value found in the swap table.
-	  + If the swap entry exists and the first byte bitwise ~AND~ =0x8= is not 0 and the index has an entry in the 2nd swap table, set the first character of the output to the value found in the 2nd swap table.
-	  + In any other case, set the first character of the output to the value found in the /kana/ slice at the /index/.
-     - Stage 1:
-       1. Compute a sub table for /index/ plus the start of /range/ using the ranges defined in ~KANA_SUB_VALID_FOR~ and store it in /sub/. If there is no sub table possible, skip to step 3.
-       2. If there is an entry in /sub/ for the index of the 2nd byte modulo the size of ~KANA_SUB~, set the second output character to be that character.
-       3. If there was no value set from the sub table, the 2nd output character becomes the first output character from inputting the 2nd byte back through /Stage 0/ as the first byte.
-     - Concatenate both characters and move to the next 16-bit block.
+    - The most and least significant 8 bits are each seperated into /Stage 0/ and /Stage 1/ each operating on the first and second byte respectively.
+    - Stage 0:
+      1. The byte is sign tested (bitwise ~AND~ =0x80=), store this as a boolean in /sign0/.
+      2. The valid first character range is looked up using the result of the sign test (either 0 or 1), store the range in /range/, and the slice ~KANA~ taken from the range in /kana/.
+      3. The first index is calculated as the unsigned first byte modulo the size (exclusive) of /range/. Store this as /index0/.
+      4. The swap table is checked to see if /index0/ has an entry. Then each following step is checked in order:
+	 + If the swap entry exists and the first byte bitwise ~AND~ =0x2= is not 0, set the first character of the output to the value found in the swap table.
+	 + If the swap entry exists and the first byte bitwise ~AND~ =0x8= is not 0 and the index has an entry in the 2nd swap table, set the first character of the output to the value found in the 2nd swap table.
+	 + In any other case, set the first character of the output to the value found in the /kana/ slice at the /index/.
+    - Stage 1:
+      1. Compute a sub table for /index/ plus the start of /range/ using the ranges defined in ~KANA_SUB_VALID_FOR~ and store it in /sub/. If there is no sub table possible, skip to step 3.
+      2. If there is an entry in /sub/ for the index of the 2nd byte modulo the size of ~KANA_SUB~, set the second output character to be that character.
+      3. If there was no value set from the sub table, the 2nd output character becomes the first output character from inputting the 2nd byte back through /Stage 0/ as the first byte.
+    - Concatenate both characters and move to the next 16-bit block.
 
     Notes:
-     - It is valid for a single iterator to produce between 0 and 2 characters but no more.
-     - If an input given to the algorithm that cannot be divided exactly into 16-bit blocks (i.e. one byte is left over), a padding byte of 0 is added as the 2nd byte to make it fit.
+    - It is valid for a single iterator to produce between 0 and 2 characters but no more.
+    - If an input given to the algorithm that cannot be divided exactly into 16-bit blocks (i.e. one byte is left over), a padding byte of 0 is added as the 2nd byte to make it fit.
     For more information see [[file:./src/mnemonic.rs][mnemonic.rs]].  
 ** License
    GPL'd with love <3

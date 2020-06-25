@@ -11,6 +11,7 @@ const PSalt = ref.refType(Salt);
 
 const Context = struct({
     'algo': 'char',
+    'flags': 'long',
     'salt': Salt,
 });
 const PContext = ref.refType(Context);
@@ -23,6 +24,7 @@ const lib = ffi.Library('libkhash', {
 
     'khash_length': ['int', [PContext, 'string', 'long', PLong]],
     'khash_do': ['int', [PContext, 'string', 'long', 'string', 'long']],
+    'khash_max_length': ['int', ['char', 'long', PLong]],
 });
 
 const ctx_create = (algo, salt, salt_ref, salt_sz) => {
@@ -50,6 +52,11 @@ const khash_do = (ctx, jsstring, len) => {
     let buffer = Buffer.alloc(len+1);
     lib.khash_do(ctx,string,string.length,buffer,len);
     return ref.readCString(buffer,0);
+};
+const khash_max_length = (algo, input) => {
+    let len = ref.alloc('long');
+    lib.khash_max_length(algo, input, len);
+    return len.deref();
 };
 
 const get_salt_type = (salt) => {
@@ -83,6 +90,15 @@ function Kana(algo, salt)
 	this.ctx = ctx_create(algo || 0, stype, fbuffer, fbuffer ? fbuffer.length : 0);
     }
 }
+Kana.single = function(algo, salt, input) {
+    const mlen = khash_max_length(algo || 0, input.length);
+
+    const stype = get_salt_type(salt);
+    const fbuffer = salt ? salt.buffer || null : null;
+    const ctx = ctx_create(algo || 0, stype, fbuffer, fbuffer ? fbuffer.length : 0);
+
+    return khash_do(ctx, input, mlen);
+};
 const K = Kana.prototype;
 
 /// Free the associated context.
