@@ -42,8 +42,7 @@ impl Digest {
 		    return d;
 		}
 	    }
-	    let from = [from[1]];
-	    d.1 = Self::new(&from[..]).0;
+	    d.1 = Self::new(&from[1..]).0;
 	}
 	d
     }
