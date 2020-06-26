@@ -251,6 +251,6 @@
     Notes:
     - It is valid for a single iterator to produce between 0 and 2 characters but no more.
     - If an input given to the algorithm that cannot be divided exactly into 16-bit blocks (i.e. one byte is left over), a padding byte of 0 is added as the 2nd byte to make it fit.
-    For more information see [[file:./src/mnemonic.rs][mnemonic.rs]].  
+    For more information see [[file:./src/mnemonic.rs][mnemonic.rs]] and [[file:./src/map.rs][map.rs]].
 ** License
    GPL'd with love <3

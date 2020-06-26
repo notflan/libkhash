@@ -24,7 +24,7 @@ pub const KANA: &[char; 92] = &[
     'ヲ', //91 
 ];
 
-/// Valid kana for the 
+/// Valid kana for the first swap table
 pub const KANA_SWAP: &[Option<char>; 92] = &[
     None, None, None, None, None, //a
     Some('が'), Some('ぎ'), Some('ぐ'), Some('げ'), Some('ご'), //ka
@@ -48,6 +48,7 @@ pub const KANA_SWAP: &[Option<char>; 92] = &[
     None, //wo (91)
 ];
 
+/// Valid kana for the 2nd swap table
 pub const KANA_SWAP2: &[Option<char>; 92] = &[
     None, None, None, None, None, //a
     None, None, None, None, None, //ka
@@ -70,11 +71,14 @@ pub const KANA_SWAP2: &[Option<char>; 92] = &[
     None, None, None, None, None, //ya
     None, //wo (91)
 ];
+
+/// Ranges for the sign0 test
 pub const KANA_SIGN: &[RangeInclusive<usize>; 2] = &[
     0..=45,
     46..=91,
 ];
 
+/// Valid kana for the subscript
 pub const KANA_SUB: &[char; 18] = &[
     'ゃ',
     'ゅ',
@@ -90,6 +94,7 @@ pub const KANA_SUB: &[char; 18] = &[
 
 use crate::def::Definition;
 
+/// Valid ranges for the subscript from the kana table
 pub const KANA_SUB_VALID_FOR: &[Definition; 18] = &[ // Should we properly restrict these to only ones that make sense? (i.e. KI SHI HI etc..)
     Definition::single(5..=39),
     Definition::single(5..=39),
@@ -148,7 +153,8 @@ pub fn sub(i: usize) -> Option<[Option<char>; KANA_SUB.len()]>
     }
 }
 
-pub fn sub_old(i: usize) -> Option<Vec<char>>
+/// Get all valid subs for kana at index `i`.
+pub fn sub_all(i: usize) -> Option<Vec<char>>
 {
     if i < KANA.len() {
 	let mut output = Vec::with_capacity(KANA_SUB.len());
