@@ -1,0 +1,53 @@
+* kana-hash
+Common Lisp kana hashes using CFFI.
+
+We export one function, ~make-hash~, that takes the ~string~ we want
+to hash, and optionally the ~algorithm~, ~salt-type~ and ~salt~ to use.
+
+** Installation
+- =git clone= the repo
+- =$ make && sudo make install=
+- Add kana-hash to your quicklisp local-projects with something like
+  =$ ln -sf `pwd`/contrib/kana-hash/
+  $home/quicklisp/local-projects/kana-hash=
+- Then in your Lisp do:
+#+BEGIN_SRC lisp
+(ql:register-local-projects)
+(ql:quickload :kana-hash)
+#+END_SRC
+** Usage
+#+BEGIN_SRC lisp
+;; Just hashing the string
+(kana-hash:make-hash "uguu~")
+
+;; Using a different algorithm
+(kana-hash:make-hash "uguu~" :algo +algo-sha256+)
+
+;; Using a salt
+;; salt-type is implicitly set to +salt-specific+
+(kana-hash:make-hash "uguu~" :salt "am I cute?")
+
+;; Using a different algorithm and salt-type
+(kana-hash:make-hash "uguu~"
+                     :algo +algo-crc32+
+                     :salt-type +salt-random+)
+#+END_SRC
+** Algorithms
+We define lisp constants for the algorithms used. Input is ~uguu~~
+using the default salt.
+| Algorithm               | Output                                                           |
+| =+algo-sha256+=         | おシソまツアでぅせヅモァだゅノぴヲろヂォセづマふげぁユねハァがゅ |
+| =+algo-crc32+=          | わほヂァ                                                         |
+| =+algo-crc64+=          | づやワえほぢレご                                                 |
+| =+algo-sha256-truncated+= | おシソまツアでぅ                                                 |
+** Salt types
+We also define constants for salt types. Input is ~uguu~~ using the
+default algorithm.
+| Salt Type       | Output           |
+| =+salt-none+=   | らニにすわムねぅ |
+| =+salt-default+= | おシソまツアでぅ |
+| =+salt-specific+= | ぱペみぇサべツュ |
+| =+salt-random+= | リヨみがゆヲえに |
+Calling ~+salt-specific+~ without a ~salt~ it will use the salt
+~NIL~. Using a ~salt~ will implicitly set ~salt-type~ to
+~+salt-specific+~.
