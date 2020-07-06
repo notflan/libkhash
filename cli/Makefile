@@ -3,7 +3,7 @@ INCLUDE:=include/
 LIB:=lib
 BUILD:=build
 CFLAGS:= -g -Wall -pedantic
-LFLAGS:= -L$(LIB) -lkhash
+LFLAGS:= -lkhash
 
 
 all: clean test kana-hash

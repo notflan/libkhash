@@ -9,7 +9,7 @@
   "author": "",
   "license": "GPL",
   "dependencies": {
-    "ffi": "^2.3.0",
-    "ref-struct": "^1.1.0"
+    "ffi-napi": "^3.0.1",
+    "ref-struct-napi": "^1.1.1"
   }
 }

@@ -1,6 +1,6 @@
-INSTALL:= /usr/local/lib
-INSTALL-BIN:= /usr/local/bin
-INSTALL-INCLUDE:=/usr/local/include
+INSTALL:= /usr/lib64
+INSTALL-BIN:= /usr/bin
+INSTALL-INCLUDE:=/usr/include
 CLI:= cli
 
 

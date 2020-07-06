@@ -1,5 +1,4 @@
 //#![feature(const_generics)]
-#![feature(test)]
 #![allow(dead_code)]
 use std::{
     io::{
@@ -8,8 +7,6 @@ use std::{
     fmt::Write,
 };
 
-extern crate test;
-
 type HASHER = hash::Crc64Checksum;
 
 #[cfg(test)]
@@ -17,64 +14,6 @@ mod tests {
     use super::*;
     use std::collections::HashMap;
     use test::{Bencher, black_box,};
-
-    #[bench]
-    fn speed_sha256t(b: &mut Bencher)
-    {
-	const ITERATIONS: usize = 1;
-
-	let context = ctx::Context::new(ctx::Algorithm::Sha256Truncated, salt::Salt::random().unwrap());
-	const INPUT: &'static [u8] = b"owo uwu owo uwuw owuw ua eaowi oiho aido iahs  doi ajosidj aoi";
-	b.iter(|| {
-	    for _x in 0..ITERATIONS
-	    {
-		black_box(generate(&context, INPUT)).unwrap();
-	    }
-	});
-    }
-    #[bench]
-    fn speed_sha256(b: &mut Bencher)
-    {
-	const ITERATIONS: usize = 1;
-
-	let context = ctx::Context::new(ctx::Algorithm::Sha256, salt::Salt::random().unwrap());
-	const INPUT: &'static [u8] = b"owo uwu owo uwuw owuw ua eaowi oiho aido iahs  doi ajosidj aoi";
-	b.iter(|| {
-	    for _x in 0..ITERATIONS
-	    {
-		black_box(generate(&context, INPUT)).unwrap();
-	    }
-	});
-    }
-    #[bench]
-    fn speed_crc64(b: &mut Bencher)
-    {
-	const ITERATIONS: usize = 1;
-
-	let context = ctx::Context::new(ctx::Algorithm::Crc64, salt::Salt::random().unwrap());
-	const INPUT: &'static [u8] = b"owo uwu owo uwuw owuw ua eaowi oiho aido iahs  doi ajosidj aoi";
-	b.iter(|| {
-	    for _x in 0..ITERATIONS
-	    {
-		black_box(generate(&context, INPUT)).unwrap();
-	    }
-	});
-    }
-    #[bench]
-    fn speed_crc32(b: &mut Bencher)
-    {
-	const ITERATIONS: usize = 1;
-
-	let context = ctx::Context::new(ctx::Algorithm::Crc32, salt::Salt::random().unwrap());
-	const INPUT: &'static [u8] = b"owo uwu owo uwuw owuw ua eaowi oiho aido iahs  doi ajosidj aoi";
-	b.iter(|| {
-	    for _x in 0..ITERATIONS
-	    {
-		black_box(generate(&context, INPUT)).unwrap();
-	    }
-	});
-    }
-
     #[test]
     fn distrubution()
     {

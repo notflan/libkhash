@@ -1,4 +1,4 @@
-const ref = require('ref');
+const ref = require('ref-napi');
 
 /// Create a new salt from the string `buffer`.
 function Salt(buffer, tag)

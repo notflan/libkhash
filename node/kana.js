@@ -1,6 +1,6 @@
-const ffi = require('ffi');
-const struct = require('ref-struct');
-const ref = require('ref');
+const ffi = require('ffi-napi');
+const struct = require('ref-struct-napi');
+const ref = require('ref-napi');
 
 const Salt = struct({
     'type': 'char',
