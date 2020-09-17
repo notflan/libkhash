@@ -58,7 +58,8 @@
      #+END_SRC
 
 ** TODO Rust crate
-   
+   This library is written in Rust and has a Rust library target. See Rustdocs for details
+
 ** C header
    A header file is provided for C programs wanting to use the khash interface.
    Documented more fully in [[file:./include/khash.h][./include/khash.h]].
