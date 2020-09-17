@@ -1,3 +1,4 @@
+//! Contains contexts used for algorithms
 use crate::*;
 use std::{
     io::{
@@ -17,7 +18,7 @@ pub enum Algorithm
 
 impl Default for Algorithm
 {
-    fn default() -> Self
+    #[inline] fn default() -> Self
     {
 	Self::Sha256Truncated
     }
@@ -52,7 +53,6 @@ impl Context
     {
 	&self.salt
     }
-
     
     pub(crate) fn compute<R: Read>(&self, mut from: R) -> Result<(usize, Box<[u8]>), error::Error>
     {

@@ -20,6 +20,7 @@ impl Digest {
 	    return d;
 	}
 
+	
 	let sign0 = from[0] & 0x80 != 0;//unsafe { *reinterpret::value::<i8>(from) < 0 };
 	let range = &map::KANA_SIGN[sign0 as usize];
 	let kana = &map::KANA[range.clone()];
@@ -34,6 +35,7 @@ impl Digest {
 	    Some(_) if xor & 8 == 0 &&  map::KANA_SWAP2[range.start() + oneesan].is_some() => map::KANA_SWAP2[range.start()+oneesan].unwrap(),
 	    _ => kana[oneesan],
 	});
+	
 	if from.len() > 1 {
 	    if let Some(imoutos) = map::sub(range.start()+oneesan) {
 		if let Some(imouto) = imoutos[usize::from(from[1]) % map::KANA_SUB.len()]

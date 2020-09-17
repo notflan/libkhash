@@ -1,3 +1,4 @@
+//! Error for kana-hash functions
 use std::{
     fmt,
     io,
@@ -6,6 +7,7 @@ use std::{
 
 /// An error value used by all kana-hash functions.
 #[derive(Debug)]
+#[non_exhaustive]
 pub enum Error
 {
     /// There was an IO error reading or writing a buffer.
