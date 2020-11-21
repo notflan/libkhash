@@ -3,7 +3,9 @@ INCLUDE =include/
 
 BUILD:=build
 
-RELEASE_CFLAGS?=  -O3 -flto -fgraphite
+OPT_FLAGS+= -fgraphite -fno-strict-aliasing
+
+RELEASE_CFLAGS?=  -O3 -flto $(OPT_FLAGS) -march=native
 RELEASE_LDFLAGS?= -O3 -flto
 
 DEBUG_CFLAGS?=    -g -O0
@@ -15,7 +17,7 @@ CFLAGS+= $(addprefix -I,$(INCLUDE)) -Wall -pedantic --std=gnu11
 LDFLAGS+= $(addprefix -L,$(LIB)) -lkhash
 
 PROJECT = kana-hash
-OBJ = $(addprefix ./obj/$(SRC:.c=.o))
+OBJ = $(addprefix ./obj/,$(SRC:.c=.o))
 OUTPUT = $(BUILD)/$(PROJECT)
 
 .PHONY: release
@@ -49,7 +51,7 @@ $(OUTPUT)-release: $(OBJ)
 $(OUTPUT)-test: CFLAGS:= $(CFLAGS) -DTEST
 $(OUTPUT)-test: $(OBJ)
 	$(CC) $^ $(CFLAGS) -o $@ $(LDFLAGS)
-	./$@	
+	./$@
 
 clean:
 	rm -rf ./obj
