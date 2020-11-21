@@ -5,17 +5,17 @@ CLI:= cli
 
 PROJECT=khash
 
-BUILD:=./target/release
-DEBUG:=./target/debug
-
-.PHONY: $(PROJECT)
-$(PROJECT): release
+BUILD =target/release
+DEBUG =target/debug
 
 .PHONY: release
 release: $(BUILD)/lib$(PROJECT).so
 
 .PHONY: debug
 debug: $(DEBUG)/lib$(PROJECT).so
+
+.PHONY: $(PROJECT)
+$(PROJECT): $(BUILD)/lib$(PROJECT).so
 
 $(BUILD)/lib$(PROJECT).so: RUSTFLAGS?= -C target-cpu=native 
 $(BUILD)/lib$(PROJECT).so:
@@ -39,7 +39,7 @@ test: | clean
 	cd $(CLI) && $(MAKE) test
 
 clean:
-	rm -f $(BUILD)/lib
+	rm -f {$(BUILD),$(DEBUG)}/lib*
 	cd $(CLI) && make clean
 
 install:

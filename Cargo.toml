@@ -28,3 +28,6 @@ libc = "0.2"
 crc = "1.8"
 hex-literal = "0.2"
 getrandom = "0.1"
+
+[build-dependencies]
+rustc_version = "0.2"
