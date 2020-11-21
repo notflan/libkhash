@@ -3,7 +3,7 @@ INCLUDE =include/
 
 BUILD:=build
 
-OPT_FLAGS+= -fgraphite -fno-strict-aliasing
+OPT_FLAGS+= -fgraphite -fno-strict-aliasing -fomit-frame-pointer -fmerge-all-constants -fmodulo-sched -funswitch-loops -fsplit-loops
 
 RELEASE_CFLAGS?=  -O3 -flto $(OPT_FLAGS) -march=native
 RELEASE_LDFLAGS?= -O3 -flto
