@@ -15,6 +15,7 @@ LIB = lib
 
 CFLAGS+= $(addprefix -I,$(INCLUDE)) -Wall -pedantic --std=gnu11 
 LDFLAGS+= $(addprefix -L,$(LIB)) -lkhash
+#./$(LIB)/libkhash.a -lpthread -ldl
 
 PROJECT = kana-hash
 OBJ = $(addprefix ./obj/,$(SRC:.c=.o))
