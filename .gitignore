@@ -3,6 +3,6 @@ Cargo.lock
 *~
 node_modules/
 package-lock.json
-cli/build/test
-cli/build/kana-hash
+cli/build/*
+cli/obj/
 *.tar.bz2
