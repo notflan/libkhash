@@ -3,9 +3,14 @@ INCLUDE =include/
 
 BUILD:=build
 
-OPT_FLAGS+= -fgraphite -fno-strict-aliasing -fomit-frame-pointer -fmerge-all-constants -fmodulo-sched -funswitch-loops -fsplit-loops
+OPT_FLAGS?= -fgraphite -march=native -flto \
+	-fopenmp -floop-parallelize-all -ftree-parallelize-loops=4 \
+	-floop-interchange -ftree-loop-distribution -floop-strip-mine -floop-block \
+	-fno-stack-check
 
-RELEASE_CFLAGS?=  -O3 -flto $(OPT_FLAGS) -march=native
+OPT_FLAGS+= -fno-strict-aliasing -fomit-frame-pointer -fmerge-all-constants -fmodulo-sched -funswitch-loops -fsplit-loops
+
+RELEASE_CFLAGS?=  -O3 $(OPT_FLAGS) 
 RELEASE_LDFLAGS?= -O3 -flto
 
 DEBUG_CFLAGS?=    -g -O0
