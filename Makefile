@@ -29,7 +29,7 @@ $(DEBUG)/lib$(PROJECT).so:
 
 .PHONY: khash-nonative
 khash-nonative:
-	$(MAKE) RUSTFLAGS="" $(BUILD)/libkhash.so
+	$(MAKE) $(BUILD)/libkhash.so
 
 .PHONY: test
 test: RUSTFLAGS+= -C target-cpu=native -C opt-level=3

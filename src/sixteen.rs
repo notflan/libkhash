@@ -15,17 +15,6 @@ where I: Iterator,
     type Item = u16;
     fn next(&mut self) -> Option<Self::Item>
     {
-	/*let mut c = 0u16;
-	unsafe {
-	    if let Some(a) = self.iter.next() {
-		crate::reinterpret::bytes_mut(&mut c)[0] = *a.borrow();
-	    } else {
-		return None;
-	    }
-	    if let Some(b) = self.iter.next() {
-		crate::reinterpret::bytes_mut(&mut c)[1] = *b.borrow();
-	    }
-    }*/
 	let mut ar = [0u8; std::mem::size_of::<u16>()];
 	if let Some(a) = self.iter.next()
 	{
@@ -39,7 +28,19 @@ where I: Iterator,
 	}
 	Some(u16::from_le_bytes(ar))
     }
+    fn size_hint(&self) -> (usize, Option<usize>) {
+	let (l, h) = self.iter.size_hint();
+	(l/2, h.map(|x| x/2))
+    }
 }
+
+impl<I> std::iter::FusedIterator for Bit16Iter<I>
+where I: Iterator + std::iter::FusedIterator,
+<I as Iterator>::Item: Borrow<u8>{}
+
+impl<I> ExactSizeIterator for Bit16Iter<I>
+where I: Iterator + ExactSizeIterator,
+<I as Iterator>::Item: Borrow<u8>{}
 
 pub trait Bit16IterExt: Iterator + Sized
 where <Self as Iterator>::Item: Borrow<u8>
