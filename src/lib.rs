@@ -206,7 +206,7 @@ fn compute<T: Read>(context: &ctx::Context, mut from: T) -> Result<(usize, Strin
     let mut output = String::with_capacity(128);
     for element in hash.into_iter()
 	.into_16()
-	.map(|bytes| mnemonic::Digest::new(unsafe{reinterpret::bytes(&bytes)}))
+	.map(|bytes| mnemonic::Digest::new(&u16::to_le_bytes(bytes)[..]))//unsafe{reinterpret::bytes(&bytes)}))
     {
 	write!(output, "{}", element)?;
     }

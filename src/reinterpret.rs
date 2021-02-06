@@ -1,5 +1,3 @@
-
-
 pub unsafe fn bytes<'a, T>(src: &'a T) -> &'a [u8]
     where T: ?Sized
 {
@@ -17,4 +15,3 @@ pub unsafe fn value<'a, T>(src: &[u8]) -> &'a T
     assert!(src.len() >= std::mem::size_of::<T>());
     &std::slice::from_raw_parts(&src[0] as *const u8 as *const T, 1)[0]
 }
-

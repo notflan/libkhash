@@ -15,7 +15,7 @@ where I: Iterator,
     type Item = u16;
     fn next(&mut self) -> Option<Self::Item>
     {
-	let mut c = 0u16;
+	/*let mut c = 0u16;
 	unsafe {
 	    if let Some(a) = self.iter.next() {
 		crate::reinterpret::bytes_mut(&mut c)[0] = *a.borrow();
@@ -25,8 +25,19 @@ where I: Iterator,
 	    if let Some(b) = self.iter.next() {
 		crate::reinterpret::bytes_mut(&mut c)[1] = *b.borrow();
 	    }
+    }*/
+	let mut ar = [0u8; std::mem::size_of::<u16>()];
+	if let Some(a) = self.iter.next()
+	{
+	    ar[0] = *a.borrow();
+	} else {
+	    return None;
 	}
-	Some(c)
+	if let Some(b) = self.iter.next()
+	{
+	    ar[1] = *b.borrow();
+	}
+	Some(u16::from_le_bytes(ar))
     }
 }
 
