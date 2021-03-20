@@ -13,7 +13,7 @@ crate-type = ["rlib", "cdylib", "staticlib"]
 [features]
 default = ["ffi", "crc"]
 
-ffi = ["malloc-array"]
+ffi = ["libc", "malloc-array"]
 
 [profile.release]
 opt-level = 3
@@ -24,7 +24,7 @@ panic = "unwind"
 [dependencies]
 sha2 = "0.9"
 malloc-array = {version = "1.4", optional=true}
-libc = "0.2"
+libc = {version = "0.2", optional=true}
 crc = {version = "1.8", optional=true}
 hex-literal = "0.2"
 getrandom = "0.1"

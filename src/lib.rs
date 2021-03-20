@@ -237,6 +237,7 @@ pub fn generate<T: AsRef<[u8]>>(context: &ctx::Context, bytes: T) -> Result<Stri
 }
 
 use std::ffi::c_void;
+#[cfg(feature="ffi")] 
 use libc::{
     size_t,
     c_char,
