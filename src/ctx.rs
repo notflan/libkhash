@@ -10,7 +10,9 @@ use std::{
 #[derive(Clone,Debug,PartialEq,Eq,Hash)]
 pub enum Algorithm
 {
+    #[cfg(feature="crc")] 
     Crc32,
+    #[cfg(feature="crc")] 
     Crc64,
     Sha256,
     Sha256Truncated,
@@ -67,8 +69,8 @@ impl Context
 	let mut output = 0usize;
 	let bytes = match self.algo
 	{
-	    Algorithm::Crc32 => provide::<hash::Crc32Checksum, _>(&mut from, &self.salt, &mut output)?,
-	    Algorithm::Crc64 => provide::<hash::Crc64Checksum, _>(&mut from, &self.salt, &mut output)?,
+	    #[cfg(feature="crc")] Algorithm::Crc32 => provide::<hash::Crc32Checksum, _>(&mut from, &self.salt, &mut output)?,
+	    #[cfg(feature="crc")] Algorithm::Crc64 => provide::<hash::Crc64Checksum, _>(&mut from, &self.salt, &mut output)?,
 	    Algorithm::Sha256 => provide::<hash::Sha256Hash, _>(&mut from, &self.salt, &mut output)?,
 	    Algorithm::Sha256Truncated => provide::<hash::Sha256Truncated, _>(&mut from, &self.salt, &mut output)?,
 	}.into_boxed_slice();
@@ -76,6 +78,7 @@ impl Context
 	Ok((output, bytes))
     }
 
+    #[cfg(feature="ffi")] 
     pub(crate) unsafe fn into_raw(self) -> CContext
     {
 	CContext{ 
@@ -85,6 +88,7 @@ impl Context
 	}
     }
     
+    #[cfg(feature="ffi")] 
     pub(crate) unsafe fn clone_from_raw(from: *const CContext) -> Self
     {
 	let from = &*from;
@@ -93,7 +97,8 @@ impl Context
 	    salt: salt::clone_from_raw(&from.salt as *const salt::FFI),
 	}
     }
-
+    
+    #[cfg(feature="ffi")] 
     pub(crate) unsafe fn from_raw(from: *mut CContext) -> Self
     {
 	let from = &mut *from;
@@ -139,8 +144,8 @@ impl From<Algorithm> for u8
     fn from(al: Algorithm) -> Self
     {
 	match al {
-	    Algorithm::Crc32 => ALGO_CRC32,
-	    Algorithm::Crc64 => ALGO_CRC64,
+	    #[cfg(feature="crc")] Algorithm::Crc32 => ALGO_CRC32,
+	    #[cfg(feature="crc")] Algorithm::Crc64 => ALGO_CRC64,
 	    Algorithm::Sha256 => ALGO_SHA256,
 	    Algorithm::Sha256Truncated => ALGO_SHA256_TRUNCATED,
 	}
@@ -151,8 +156,8 @@ impl From<u8> for Algorithm
     fn from(al: u8) -> Self
     {
 	match al {
-	    ALGO_CRC32 => Algorithm::Crc32,
-	    ALGO_CRC64 => Algorithm::Crc64,
+	    #[cfg(feature="crc")] ALGO_CRC32 => Algorithm::Crc32,
+	    #[cfg(feature="crc")] ALGO_CRC64 => Algorithm::Crc64,
 	    ALGO_SHA256 => Algorithm::Sha256,
 	    ALGO_SHA256_TRUNCATED => Algorithm::Sha256Truncated,
 	    _ => Self::default(),

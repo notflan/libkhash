@@ -1,5 +1,6 @@
 #![cfg_attr(nightly, feature(test))] 
 #![allow(dead_code)]
+#![allow(unused_imports)]
 
 #[cfg(nightly)] extern crate test;
 
@@ -10,7 +11,7 @@ use std::{
     fmt::Write,
 };
 
-type HASHER = hash::Crc64Checksum;
+//type HASHER = hash::Crc64Checksum; //was unused?
 
 #[cfg(test)]
 mod tests {
@@ -145,7 +146,9 @@ mod tests {
 	}
     }
 
+
     #[test]
+    #[cfg(feature="ffi")]
     fn max_len()
     {
 	fn max_length(algo: ctx::Algorithm, data_len: usize) -> usize
@@ -239,6 +242,7 @@ use libc::{
     c_char,
 };
 
+#[cfg(feature="ffi")] 
 use malloc_array::{
     HeapArray,
 };
@@ -246,7 +250,6 @@ use malloc_array::{
 
 
 // FFI section
-
 #[cfg(feature="ffi")] 
 mod c;
 #[cfg(feature="ffi")] 

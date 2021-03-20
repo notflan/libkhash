@@ -1,4 +1,5 @@
-use malloc_array::*;
+#[cfg(feature="ffi")] use malloc_array::*;
+
 use getrandom::{
     getrandom,
     Error,
@@ -104,8 +105,9 @@ pub(crate) const SALT_TYPE_RANDOM: u8 = 3;
 
 /// We won't try to copy more than this much data.
 const MAX_FFI_SALT_SIZE: usize = 1024;
+
 /// Clone a new `Salt` from an `FFI` salt.
-pub(crate) unsafe fn clone_from_raw(ptr: *const FFI) -> Salt
+#[cfg(feature="ffi")] pub(crate) unsafe fn clone_from_raw(ptr: *const FFI) -> Salt
 {
     let ffi = &*ptr;
     match ffi.salt_type {
@@ -119,7 +121,7 @@ pub(crate) unsafe fn clone_from_raw(ptr: *const FFI) -> Salt
     }
 }
 /// Consume an `FFI` salt and return a `Salt`.
-pub(crate) unsafe fn from_raw(ptr: *mut FFI) -> Salt
+#[cfg(feature="ffi")]  pub(crate) unsafe fn from_raw(ptr: *mut FFI) -> Salt
 {
     let ffi = &mut *ptr;
     let out = match ffi.salt_type {
@@ -138,7 +140,7 @@ pub(crate) unsafe fn from_raw(ptr: *mut FFI) -> Salt
 }
 
 /// Consume a `Salt` and output a new `FFI` salt.
-pub(crate) unsafe fn into_raw(salt: Salt) -> FFI
+#[cfg(feature="ffi")] pub(crate) unsafe fn into_raw(salt: Salt) -> FFI
 {
     unsafe fn allocate(slice: impl AsRef<[u8]>) -> FFI
     {
@@ -166,8 +168,7 @@ pub(crate) unsafe fn into_raw(salt: Salt) -> FFI
     }
 }
 
-fn box_with_malloc(slice: impl AsRef<[u8]>) -> (*mut u8, usize)
+#[cfg(feature="ffi")] fn box_with_malloc(slice: impl AsRef<[u8]>) -> (*mut u8, usize)
 {
     unsafe { HeapArray::from_slice_copied(slice) }.into_raw_parts()
 }
-
