@@ -1,3 +1,36 @@
+//! # khash - Kana mnemonic hashes
+//!
+//! This library pretty prints salted hashes of a veriaty of digests in kana.
+//! Mnemonics can be generated from slices or from streams.
+//!
+//! It has a Rust API documented here, as well as C FFI bindings and a C header (see `include/`.)
+//!
+//! ## Digest
+//! The digests available are:
+//! * SHA256 truncated to the first 64 bits (8 bytes) (default digest)
+//! * SHA256 full
+//! * CRC64 (requires "crc" default feature enabled)
+//! * CRC32 (requires "crc" default feature enabled)
+//!
+//! ### Salting
+//! The salting options for the digests are:
+//! * Hard-coded embedded 32 byte salt (default)
+//! * Fixed compile time 32 byte salt
+//! * Fixed runtime 32 byte salt
+//! * Dynamically sized runtime salt
+//! * No salt
+//! The salt (if any) is fed into the digest directly after all the data.
+//! (See `ctx` and `salt` modules).
+//!
+//! ## Generating kana mnemonics from arbitrary data
+//! To use the mnemonic generation algorithm on any binary data instead of just hash outputs, the `Digest` iterator type is provided.
+//! The `Digest` iterator can be created from any type implementing `std::io::Read` and produces a kana mnemonic reading from the stream until its end.
+//! ```
+//! # use khash::Digest;
+//! let input = "Hello world!";
+//! let mnemonic: String = Digest::new(&mut input.as_bytes()).collect(); // Read the bytes from the `input` string and collect the kana mnemonic into a `String` 
+//! ```
+
 #![cfg_attr(nightly, feature(test))] 
 #![allow(dead_code)]
 #![allow(unused_imports)]
@@ -162,7 +195,10 @@ mod tests {
 
 	let input = "owowowoakpwodkapowkdapowkdpaokwpdoakwd";
 
-	let algos = [ctx::Algorithm::Crc32, ctx::Algorithm::Crc64, ctx::Algorithm::Sha256, ctx::Algorithm::Sha256Truncated];
+	let algos = [#[cfg(feature="crc")] ctx::Algorithm::Crc32,
+		     #[cfg(feature="crc")] ctx::Algorithm::Crc64,
+		     ctx::Algorithm::Sha256,
+		     ctx::Algorithm::Sha256Truncated];
 	for i in  0..1000
 	{
 	    let max_len = max_length(algos[i%algos.len()].clone(), 0);
@@ -177,7 +213,8 @@ mod tests {
     }
 }
 
-pub const BUFFER_SIZE: usize = 4096;
+/// The size used for internal buffers
+const BUFFER_SIZE: usize = 4096;
 
 mod array;
 mod reinterpret;
@@ -217,7 +254,14 @@ fn compute<T: Read>(context: &ctx::Context, mut from: T) -> Result<(usize, Strin
     Ok((read,output))
 }
 
-/// Generate kana hash from a slice.
+/// Generate kana hash from a slice of bytes with this digest.
+///
+/// # Example
+/// To generate a hash with the default digest from a string
+/// ```
+/// # use khash::generate;
+/// generate(&Default::default(), "Hello world!").expect("Failed to generate hash string");
+/// ```
 pub fn generate<T: AsRef<[u8]>>(context: &ctx::Context, bytes: T) -> Result<String, error::Error>
 {
     let bytes = bytes.as_ref();
@@ -230,7 +274,26 @@ pub fn generate<T: AsRef<[u8]>>(context: &ctx::Context, bytes: T) -> Result<Stri
     }
 }
 
-/// Generate kana hash from a stream
+/// Generate kana hash from a stream of bytes with this digest.
+/// # Example
+/// To generate a hash from a file with the default digest
+/// ```
+/// # use khash::generate_stream;
+/// # use std::{path::Path, fs::OpenOptions};
+/// fn hash_file(file_name: impl AsRef<Path>) -> String
+/// {
+///     let mut file = OpenOptions::new()
+/// 	.read(true)
+/// 	.open(file_name).expect("Failed to open file");
+/// 
+///     let file_size = file.metadata().expect("Failed to stat file").len();
+/// 
+///     let (bytes_read, hash) = generate_stream(&Default::default(), &mut file).expect("Failed to generate hash from file");
+///     assert_eq!(bytes_read as u64, file_size, "Failed to read whole file");
+/// 
+///     hash
+/// }
+/// ```
 #[inline] pub fn generate_stream<T: Read+?Sized>(context: &ctx::Context, from: &mut T) -> Result<(usize, String), error::Error>
 {
     compute(context, from)

@@ -1,4 +1,4 @@
-//! Error for kana-hash functions
+//! Error for kana-hash operation
 use std::{
     fmt,
     io,

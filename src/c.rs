@@ -155,8 +155,8 @@ pub unsafe extern "C" fn khash_max_length(algo: u8, _input_sz: libc::size_t, max
 {
     no_unwind!{
 	let hash_sz = match ctx::Algorithm::from(algo) {
-	    ctx::Algorithm::Crc32 => std::mem::size_of::<hash::Crc32Checksum>(),
-	    ctx::Algorithm::Crc64 => std::mem::size_of::<hash::Crc64Checksum>(),
+	    #[cfg(feature="crc")] ctx::Algorithm::Crc32 => std::mem::size_of::<hash::Crc32Checksum>(),
+	    #[cfg(feature="crc")] ctx::Algorithm::Crc64 => std::mem::size_of::<hash::Crc64Checksum>(),
 	    ctx::Algorithm::Sha256 => std::mem::size_of::<hash::Sha256Hash>(),
 	    ctx::Algorithm::Sha256Truncated => std::mem::size_of::<hash::Sha256Truncated>(),
 	};

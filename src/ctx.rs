@@ -1,4 +1,11 @@
-//! Contains contexts used for algorithms
+//! Contains contexts used for the digest algorithms.
+//!
+//! These contexts contain the digest name and the salt to be used with the digest.
+//!
+//! # Defaults
+//! Both the digest name (`Algorithm`) and the `Context` itself implement `Default`.
+//! The default algorithm is `SHA256Truncated`, and the default `Context` uses this algorithm along with the default salt (which is the library's hard-coded static salt.)
+
 use crate::*;
 use std::{
     io::{
@@ -7,14 +14,22 @@ use std::{
 };
 
 /// An algorithm to use for the context.
+///
+/// # CRC
+/// `CRC32` and `CRC64` are only available if compiled with the default "crc" feature enabled.
+/// If the library is compiled without this feature, but with the "ffi" feature (i.e. generates native libraries), then FFI requests for the CRC family of digests will instead use the default (`Sha256Truncated`).
 #[derive(Clone,Debug,PartialEq,Eq,Hash)]
 pub enum Algorithm
 {
-    #[cfg(feature="crc")] 
+    #[cfg(feature="crc")]
+    /// The 32 bit CRC checksum (requires default feature `crc`)
     Crc32,
-    #[cfg(feature="crc")] 
+    #[cfg(feature="crc")]
+    /// The 64 bit CRC checksum (requires default feature `crc`)
     Crc64,
+    /// The SHA256 hash
     Sha256,
+    /// The SHA256 hash truncated to the first 64 bits
     Sha256Truncated,
 }
 
@@ -27,6 +42,9 @@ impl Default for Algorithm
 }
 
 /// A kana-hash context containing it's salt and algorithm.
+///
+/// # Default
+/// The default context contains the `SHA256Truncated` digest algorithm and the library's hard-coded static salt.
 #[derive(Clone,Debug,PartialEq,Eq,Hash)]
 pub struct Context
 {

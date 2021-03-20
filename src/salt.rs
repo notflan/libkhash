@@ -1,3 +1,20 @@
+//! Salt for the digest `Context` (see module `ctx`)
+//!
+//! # Salt kinds
+//! * Hard-coded embedded 32 byte salt (default)
+//! * Fixed compile time or global static 32 byte salt
+//! * Fixed runtime 32 byte salt
+//! * Dynamically sized runtime salt
+//! * No salt
+//!
+//! You can also generate a random salt at runtime with `Salt::random()` which uses `getrandom`'s RNG to create a fixed 32 bytes salt.
+//!
+//! # Method of salting
+//! The salt is fed into the hashing function directly after the data.
+//!
+//! # FFI note
+//! When generating a dynamic salt from an FFI context, there is a hard limit of 1024 bytes for safety reasons. This is more than enough data for a salt.
+
 #[cfg(feature="ffi")] use malloc_array::*;
 
 use getrandom::{
@@ -14,19 +31,35 @@ use std::{
     convert::{TryInto,TryFrom},
 };
 
-/// The static salt size
+/// The static salt size. (32 bytes.)
+///
+/// When providing a compile-time or otherwise global salt, it must be of this size.
 pub const SIZE: usize = 32;
 
-/// The default static salt
+/// The default embedded static salt.
+///
+/// It is recommended to use your own salt instead of this one, but this is used as the default if a salt option is not provided.
+///
+/// # Guarantee
+/// This salt is guaranteed stay the same throughout all versions and iterations of this library.
+/// It was randomly generated as the 32 bytes hex literal `hex!("6787f049791466d5a31a3aa6f7138d8fbb907fd1785758298b5c97b0f3fb31ff")`.
+pub static EMBEDDED_SALT: &'static [u8; SIZE] = STATIC_SALT;
+
 const STATIC_SALT: &[u8; SIZE] = &hex!("6787f049791466d5a31a3aa6f7138d8fbb907fd1785758298b5c97b0f3fb31ff");
 
-/// A salt to use for the kana-hash algorithm
+/// A salt to use for the kana-hash algorithm, or lack thereof.
+///
+/// It is recommended to provide your own salt, but the default `EMBEDDED_SALT` can be used instead.
 #[derive(Clone,PartialEq,Eq,Hash,Debug)]
 pub enum Salt
 {
+    /// Do not salt the hash at all
     None,
+    /// Salt with a compile-time, global, or leaked 32 byte array
     Static(&'static [u8; SIZE]),
+    /// Salt with a runtime 32 byte array
     Fixed([u8; SIZE]),
+    /// Salt with a runtime dynamic boxed byte slice of any size (must be at least 1)
     Dynamic(Box<[u8]>),
 }
 
@@ -65,7 +98,7 @@ impl Salt
 	getrandom(&mut buffer[..])?;
 	Ok(Self::Fixed(buffer))
     }
-    /// The default internal salt
+    /// The default embedded salt
     pub const fn internal() -> Self
     {
 	Self::Static(STATIC_SALT)
