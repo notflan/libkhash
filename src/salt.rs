@@ -144,7 +144,7 @@ const MAX_FFI_SALT_SIZE: usize = 1024;
 {
     let ffi = &*ptr;
     match ffi.salt_type {
-	SALT_TYPE_SPECIFIC => {
+	SALT_TYPE_SPECIFIC if ffi.size > 0 => {
 	    Salt::Dynamic(HeapArray::from_raw_copied(ffi.body as *const u8, usize::try_from(ffi.size).unwrap()).into_boxed_slice())
 	},
 	SALT_TYPE_DEFAULT => {
@@ -158,7 +158,7 @@ const MAX_FFI_SALT_SIZE: usize = 1024;
 {
     let ffi = &mut *ptr;
     let out = match ffi.salt_type {
-	SALT_TYPE_SPECIFIC => {
+	SALT_TYPE_SPECIFIC if ffi.size > 0 => {
 	    Salt::Dynamic(HeapArray::from_raw_parts(ffi.body as *mut u8, usize::try_from(ffi.size).unwrap()).into_boxed_slice())
 	},
 	SALT_TYPE_DEFAULT => {
